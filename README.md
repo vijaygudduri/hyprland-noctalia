@@ -34,7 +34,11 @@
       
       ```bash
       cp -r wallpapers ~/ && cp -r fastfetch hypr kitty nwg-drawer scripts chrome-flags.conf ~/.config/
-      ```   
+      ```
+
+      ```bash
+      chmod +x ~/.config/scripts/screenshot.sh
+      ```
 
 6.  **Install noctalia-shell**
 
