@@ -3,7 +3,7 @@
 1.  **Install hyprland, sddm, chrome and kitty**
 
       ```bash
-      sudo pacman -S hyprland sddm kitty chromium ; sudo systemctl enable sddm
+      sudo pacman -S hyprland sddm kitty ; sudo systemctl enable sddm
       ```
 
 2.  **Install necessaries**
