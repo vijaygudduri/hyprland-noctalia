@@ -3,17 +3,13 @@
 1.  **Install hyprland, sddm, chrome and kitty**
 
       ```bash
-      sudo pacman -S hyprland sddm kitty ; sudo systemctl enable sddm
-      ```
-
-      ```bash
-      paru -S google-chrome
+      sudo pacman -S hyprland sddm kitty chromium ; sudo systemctl enable sddm
       ```
 
 2.  **Install necessaries**
 
       ```bash      
-      sudo pacman -S --needed --noconfirm nwg-drawer nwg-look polkit-gnome gnome-keyring xdg-desktop-portal-hyprland hypridle wl-clipboard starship network-manager-applet gnome-calculator gnome-text-editor gnome-clocks blueman nautilus onlyoffice-bin telegram-desktop transmission-gtk smplayer swappy evince brightnessctl hyprpicker wlsunset cachyos-kernel-manager grimblast python-pydbus python-gobject python-dbus-next
+      sudo pacman -S --needed --noconfirm nwg-drawer nwg-look polkit-gnome gnome-keyring xdg-desktop-portal-hyprland hypridle hyprlock wl-clipboard starship network-manager-applet gnome-calculator gnome-text-editor gnome-clocks blueman nautilus telegram-desktop transmission-gtk smplayer swappy evince brightnessctl playerctl hyprpicker wlsunset cachyos-kernel-manager grimblast python-pydbus python-gobject python-dbus-next
       ```
 
       ```bash
@@ -33,11 +29,11 @@
       ```
       
       ```bash
-      cp -r wallpapers ~/ && cp -r fastfetch hypr kitty nwg-drawer scripts chrome-flags.conf ~/.config/
+      cp -r wallpapers ~/ && cp -r fastfetch hypr kitty nwg-drawer scripts chromium-flags.conf ~/.config/
       ```
 
       ```bash
-      chmod +x ~/.config/scripts/screenshot.sh
+      chmod +x ~/.config/scripts/*.sh
       ```
 
 6.  **Install noctalia-shell**
@@ -68,11 +64,15 @@
 
 10.  **To decrease boot order timeout prompt of systemd while rebooting, switch to root and change timeout to 2 (or 0 to disable completly) in /boot/loader/loader.conf**
 
-11.  **Change to google dns, replace 'Android' with your connection name**
+11.  **Change to cloudflare dns, replace 'Android' with your connection name**
 
       ```bash
-      nmcli con mod 'Android' ipv4.dns '8.8.8.8 8.8.4.4'
-      nmcli con mod 'Android' ipv6.dns '2001:4860:4860::8888 2001:4860:4860::8844'
+      nmcli con mod 'Android' ipv4.dns '1.1.1.1 1.0.0.1'
+      nmcli con mod 'Android' ipv6.dns '2606:4700:4700::1111 2606:4700:4700::1001'
+      
+      nmcli con mod 'Android' ipv4.ignore-auto-dns yes
+      nmcli con mod 'Android' ipv6.ignore-auto-dns yes
+      
       nmcli con up 'Android'
       ```
 
