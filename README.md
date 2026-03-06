@@ -64,16 +64,16 @@
 
 10.  **To decrease boot order timeout prompt of systemd while rebooting, switch to root and change timeout to 2 (or 0 to disable completly) in /boot/loader/loader.conf**
 
-11.  **Change to cloudflare dns, replace 'Android' with your connection name**
+11.  **Change to cloudflare dns, replace 'Interstellar' with your connection name**
 
       ```bash
-      nmcli con mod 'Android' ipv4.dns '1.1.1.1 1.0.0.1'
-      nmcli con mod 'Android' ipv6.dns '2606:4700:4700::1111 2606:4700:4700::1001'
+      nmcli con mod 'Interstellar' ipv4.dns '1.1.1.1 1.0.0.1'
+      nmcli con mod 'Interstellar' ipv6.dns '2606:4700:4700::1111 2606:4700:4700::1001'
       
-      nmcli con mod 'Android' ipv4.ignore-auto-dns yes
-      nmcli con mod 'Android' ipv6.ignore-auto-dns yes
+      nmcli con mod 'Interstellar' ipv4.ignore-auto-dns yes
+      nmcli con mod 'Interstellar' ipv6.ignore-auto-dns yes
       
-      nmcli con up 'Android'
+      nmcli con up 'Interstellar'
       ```
 
 12.  **Add starship config and modify ls alias in fish**
