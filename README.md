@@ -29,7 +29,7 @@
       ```
       
       ```bash
-      cp -r wallpapers ~/ && cp -r fastfetch hypr kitty nwg-drawer scripts chromium-flags.conf ~/.config/
+      cp -r wallpapers ~/ && cp -r fastfetch hypr kitty nwg-drawer scripts chrome-flags.conf ~/.config/
       ```
 
       ```bash
