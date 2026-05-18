@@ -263,6 +263,7 @@ hl.device({
 ---- Gestures ----
 ---------------------
 
+-- switch workspaces
 hl.gesture({
     fingers = 3,
     direction = "vertical",
@@ -270,6 +271,7 @@ hl.gesture({
     scale = 5.0
 })
 
+-- switch windows in scrolling layout
 hl.gesture({
     fingers = 3,
     direction = "horizontal",
@@ -277,6 +279,7 @@ hl.gesture({
     scale = 2.5
 })
 
+-- close window
 hl.gesture({
     fingers = 4,
     direction = "down",
@@ -284,6 +287,7 @@ hl.gesture({
     scale = 1.5
 })
 
+-- nwg-drawer
 hl.gesture({
     fingers = 4,
     direction = "up",
@@ -359,20 +363,25 @@ hl.bind(mainMod .. " + C", hl.dsp.exec_cmd("code"))
 
 hl.bind(mainMod .. " + X", hl.dsp.exec_cmd("google-chrome-stable"))
 
+-- full screenshot
 hl.bind(mainMod .. " + SHIFT + Insert", function()
     hl.exec_cmd("mkdir -p ~/Pictures/screenshots && grimblast copysave screen ~/Pictures/screenshots/$(date +%Y-%m-%d_%H:%M:%S).png && notify-send -h int:transient:1 'Screenshot saved'")
 end)
 
+-- area screenshot
 hl.bind(mainMod .. " + Insert", function()
     hl.exec_cmd("mkdir -p ~/Pictures/screenshots && grimblast copysave area ~/Pictures/screenshots/$(date +%Y-%m-%d_%H:%M:%S).png && notify-send -h int:transient:1 'Area screenshot saved'")
 end)
 
+-- hyprlock
 hl.bind(mainMod .. " + L", hl.dsp.exec_cmd(
     "sh -c 'playerctl pause 2>/dev/null; hyprlock'"
 ))
 
+-- move window
 hl.bind(mainMod .. " + W", hl.dsp.window.drag())
 
+-- resize window
 hl.bind(mainMod .. " + A", hl.dsp.window.resize())
 
 --------------------------------
@@ -425,13 +434,14 @@ hl.window_rule({
     float = true,
 })
 
-
+-- screen sharing popup
 hl.window_rule({
     match = { class = "hyprland-share-picker" },
     float = true,
     size  = {800, 600}
 })
 
+-- smplayer choose file
 hl.window_rule({
     match = {
         class = "Smplayer",
