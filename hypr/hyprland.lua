@@ -29,7 +29,7 @@ hl.monitor({
 
 -- Set programs that you use
 local terminal    = "kitty"
-local fileManager = "nautilus"
+local fileManager = "nemo"
 local menu        = "nwg-drawer"
 
 
@@ -268,7 +268,7 @@ hl.gesture({
     fingers = 3,
     direction = "vertical",
     action = "workspace",
-    scale = 5.0
+    scale = 10.0
 })
 
 -- switch windows in scrolling layout
@@ -284,7 +284,7 @@ hl.gesture({
     fingers = 4,
     direction = "down",
     action = "close",
-    scale = 1.5
+    scale = 3.5
 })
 
 -- nwg-drawer
@@ -294,7 +294,7 @@ hl.gesture({
     action = function()
         hl.exec_cmd("nwg-drawer")
     end,
-    scale = 3.0
+    scale = 5.0
 })
 
 
