@@ -9,7 +9,7 @@
 2.  **Install necessaries**
 
       ```bash      
-      sudo pacman -S --needed --noconfirm nwg-drawer nwg-look polkit-gnome gnome-keyring xdg-desktop-portal-hyprland hypridle hyprlock wl-clipboard gnome-calculator gnome-text-editor gnome-clocks blueman nautilus smplayer swappy evince brightnessctl playerctl wlsunset grimblast python-dbus-next
+      sudo pacman -S --needed --noconfirm nwg-drawer nwg-look polkit-gnome gnome-keyring xdg-desktop-portal-hyprland hypridle hyprlock wl-clipboard gnome-calculator gnome-text-editor gnome-clocks blueman nemo smplayer swappy evince brightnessctl playerctl wlsunset grimblast python-dbus-next
       ```
 
       ```bash
