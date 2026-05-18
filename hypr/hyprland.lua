@@ -284,7 +284,7 @@ hl.gesture({
     fingers = 4,
     direction = "down",
     action = "close",
-    scale = 3.5
+    -- scale = 3.5
 })
 
 -- nwg-drawer
