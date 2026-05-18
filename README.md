@@ -9,11 +9,11 @@
 2.  **Install necessaries**
 
       ```bash      
-      sudo pacman -S --needed --noconfirm nwg-drawer nwg-look polkit-gnome gnome-keyring xdg-desktop-portal-hyprland hypridle hyprlock wl-clipboard starship network-manager-applet gnome-calculator gnome-text-editor gnome-clocks blueman nautilus telegram-desktop transmission-gtk smplayer swappy evince brightnessctl playerctl hyprpicker wlsunset cachyos-kernel-manager grimblast python-pydbus python-gobject python-dbus-next
+      sudo pacman -S --needed --noconfirm nwg-drawer nwg-look polkit-gnome gnome-keyring xdg-desktop-portal-hyprland hypridle hyprlock wl-clipboard gnome-calculator gnome-text-editor gnome-clocks blueman nautilus smplayer swappy evince brightnessctl playerctl wlsunset grimblast python-dbus-next
       ```
 
       ```bash
-      paru -S --needed --noconfirm sddm-sugar-candy-git catppuccin-gtk-theme-mocha bibata-cursor-theme visual-studio-code-bin zoom clipvault-bin
+      paru -S --needed --noconfirm sddm-astronaut-theme catppuccin-gtk-theme-mocha bibata-cursor-theme visual-studio-code-bin clipvault-bin
       ```
 
 4.  **Clone the dotfiles repo**
@@ -29,7 +29,7 @@
       ```
       
       ```bash
-      cp -r wallpapers ~/ && cp -r fastfetch hypr kitty nwg-drawer scripts chrome-flags.conf ~/.config/
+      cp -r Wallpapers ~/Pictures/ && cp .zshrc_myconfigs ~ && cp -r fastfetch hypr kitty nwg-drawer scripts chrome-flags.conf ~/.config/
       ```
 
       ```bash
@@ -44,7 +44,7 @@
 
 7.  **Apply themes from nwg-look (theme is 'catppuccin mocha' and cursor theme is 'bibata modern ice')**
 
-8.  **To apply sugar-candy theme on sddm, run below commands**
+8.  **To apply astronaut theme on sddm, run below commands**
 
       ```bash
       sudo mkdir -p /etc/sddm.conf.d ; sudo touch /etc/sddm.conf.d/sddm.conf
@@ -56,7 +56,7 @@
       Numlock=on
       
       [Theme]
-      Current=sugar-candy
+      Current=sddm-astronaut-theme
       CursorTheme=Bibata-Modern-Ice
       CursorSize=24
       EOF"
@@ -76,10 +76,16 @@
       nmcli con up 'Interstellar'
       ```
 
-12.  **Add starship config and modify ls alias in fish**
+12.  **Change the shell to zsh**
 
       ```bash
-      echo -e "\n\nalias ls='eza --color=always --group-directories-first --icons'\n\nstarship init fish | source" >> ~/.config/fish/config.fish
+      chsh -s $(which zsh)
+      ```
+
+13.  **Copy some custom configs to .zshrc**
+
+      ```bash
+      printf '# My custom configs\n[[ -f ~/.zshrc_myconfigs ]] && source ~/.zshrc_myconfigs\n\n' | cat - ~/.zshrc > ~/.zshrc.tmp && mv ~/.zshrc.tmp ~/.zshrc
       ```
 
 
