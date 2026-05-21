@@ -42,9 +42,15 @@
       sudo pacman -S noctalia-shell
       ```
 
-7.  **Apply themes from nwg-look (theme is 'catppuccin mocha' and cursor theme is 'bibata modern ice')**
+7.  **Download Candy icon theme & extract it to ~/.icons and Apply themes from nwg-look**
 
-8.  **To apply astronaut theme on sddm, run below commands**
+      candy icons --> https://www.gnome-look.org/p/1305251/
+
+      ```bash
+      mkdir -p ~/.icons && tar -xJf ~/Downloads/candy-icons.tar.xz -C ~/.icons
+      ```
+
+9.  **To apply astronaut theme on sddm, run below commands**
 
       ```bash
       sudo mkdir -p /etc/sddm.conf.d ; sudo touch /etc/sddm.conf.d/sddm.conf
