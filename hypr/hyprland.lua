@@ -29,7 +29,7 @@ hl.monitor({
 
 -- Set programs that you use
 local terminal    = "kitty"
-local fileManager = "nemo"
+local fileManager = "nautilus"
 local menu        = "nwg-drawer"
 
 
@@ -42,11 +42,12 @@ local menu        = "nwg-drawer"
 -- Autostart necessary processes (like notifications daemons, status bars, etc.)
 -- Or execute your favorite apps at launch like this:
 --
--- hl.on("hyprland.start", function () 
+-- hl.on("hyprland.start", function ()
 --   hl.exec_cmd(terminal)
 --   hl.exec_cmd("nm-applet")
 --   hl.exec_cmd("waybar & hyprpaper & firefox")
 -- end)
+
 
 hl.on("hyprland.start", function()
 
@@ -59,6 +60,10 @@ hl.on("hyprland.start", function()
     hl.exec_cmd("gnome-keyring-daemon --start --components=pkcs11,secrets")
 
     hl.exec_cmd("~/.config/scripts/battery-notify.py")
+
+    hl.exec_cmd("wl-paste --watch clipvault store --max-entries 200 --max-entry-age 2d")
+
+    hl.exec_cmd("wl-clip-persist --clipboard both")
 
 end)
 
@@ -110,7 +115,8 @@ hl.config({
         border_size = 2,
 
         col = {
-            active_border   = { colors = {"rgba(33ccffee)", "rgba(00ff99ee)"}, angle = 45 },
+            -- active_border   = "rgba(33ccffee)",
+            active_border   = "rgba(d3d3d3ee)",
             inactive_border = "rgba(595959aa)",
         },
 
@@ -125,7 +131,7 @@ hl.config({
     },
 
     decoration = {
-        rounding       = 5,
+        rounding       = 2,
         rounding_power = 2,
 
         -- Change transparency of focused and unfocused windows
@@ -152,35 +158,26 @@ hl.config({
     },
 })
 
--- Default curves and animations, see https://wiki.hypr.land/Configuring/Advanced-and-Cool/Animations/
-hl.curve("easeOutQuint",   { type = "bezier", points = { {0.23, 1},    {0.32, 1}    } })
-hl.curve("easeInOutCubic", { type = "bezier", points = { {0.65, 0.05}, {0.36, 1}    } })
-hl.curve("linear",         { type = "bezier", points = { {0, 0},       {1, 1}       } })
-hl.curve("almostLinear",   { type = "bezier", points = { {0.5, 0.5},   {0.75, 1}    } })
-hl.curve("quick",          { type = "bezier", points = { {0.15, 0},    {0.1, 1}     } })
+-- -- Curves and animations, see https://wiki.hypr.land/Configuring/Advanced-and-Cool/Animations/
 
--- Default springs
-hl.curve("easy",           { type = "spring", mass = 1, stiffness = 71.2633, dampening = 15.8273644 })
+-- Curves
+hl.curve("overshoot", { type = "bezier", points = { { 0.05, 0.9 }, { 0.1, 1.1 } } })
+hl.curve("gnomeOut",  { type = "bezier", points = { { 0.25, 1.0 }, { 0.5, 1.0 } } })
+hl.curve("shiftIn", { type = "bezier", points = { { 0.22, 1 }, { 0.36, 1 } } })
+hl.curve("easeOut", { type = "bezier", points = { { 0.16, 1 }, { 0.3, 1 } } })
 
-hl.animation({ leaf = "global",        enabled = true,  speed = 10,   bezier = "default" })
-hl.animation({ leaf = "border",        enabled = true,  speed = 5.39, bezier = "easeOutQuint" })
-hl.animation({ leaf = "windows",       enabled = true,  speed = 4.79, bezier = "easeOutQuint" })
-hl.animation({ leaf = "windowsIn",     enabled = true,  speed = 4.1,  spring = "easy",         style = "popin 87%" })
--- hl.animation({ leaf = "windowsOut",    enabled = true,  speed = 1.49, bezier = "quick"})
--- hl.animation({ leaf = "windowsOut", enabled = true, speed = 5, bezier = "quick", style = "slide" })
-hl.animation({ leaf = "windowsOut", enabled = true, speed = 4, bezier = "easeOutQuint", style = "gnome" })
-hl.animation({ leaf = "fadeIn",        enabled = true,  speed = 1.73, bezier = "almostLinear" })
-hl.animation({ leaf = "fadeOut",       enabled = true,  speed = 1.46, bezier = "almostLinear" })
-hl.animation({ leaf = "fade",          enabled = true,  speed = 3.03, bezier = "quick" })
-hl.animation({ leaf = "layers",        enabled = true,  speed = 3.81, bezier = "easeOutQuint" })
-hl.animation({ leaf = "layersIn",      enabled = true,  speed = 4,    bezier = "easeOutQuint", style = "fade" })
-hl.animation({ leaf = "layersOut",     enabled = true,  speed = 1.5,  bezier = "linear",       style = "fade" })
-hl.animation({ leaf = "fadeLayersIn",  enabled = true,  speed = 1.79, bezier = "almostLinear" })
-hl.animation({ leaf = "fadeLayersOut", enabled = true,  speed = 1.39, bezier = "almostLinear" })
-hl.animation({ leaf = "workspaces",    enabled = true,  speed = 1.94, bezier = "almostLinear", style = "fade" })
-hl.animation({ leaf = "workspacesIn",  enabled = true,  speed = 1.21, bezier = "almostLinear", style = "fade" })
-hl.animation({ leaf = "workspacesOut", enabled = true,  speed = 1.94, bezier = "almostLinear", style = "fade" })
-hl.animation({ leaf = "zoomFactor",    enabled = true,  speed = 7,    bezier = "quick" })
+-- Animations
+-- 1. Explicitly clear the style parameter off the root 'windows' engine
+hl.animation({ leaf = "windows", enabled = true, speed = 7, bezier = "overshoot" })
+
+-- 2. Explicitly separate your opening style (In) and closing style (Out)
+hl.animation({ leaf = "windowsIn", enabled = true, speed = 5, bezier = "easeOut", style = "slide" })
+hl.animation({ leaf = "windowsOut", enabled = true, speed = 4, bezier = "gnomeOut", style = "gnome" })
+
+-- 3. The moving engine and workspace engines
+hl.animation({ leaf = "windowsMove", enabled = true, speed = 6, bezier = "easeOut" })
+hl.animation({ leaf = "workspaces", enabled = true, speed = 6, bezier = "overshoot", style = "slidefadevert 20%" })
+
 
 -- Ref https://wiki.hypr.land/Configuring/Basics/Workspace-Rules/
 -- "Smart gaps" / "No gaps when only"
@@ -272,7 +269,7 @@ hl.gesture({
     fingers = 3,
     direction = "vertical",
     action = "workspace",
-    scale = 5.0
+    scale = 1.5
 })
 
 -- switch windows in scrolling layout
