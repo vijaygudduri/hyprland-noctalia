@@ -58,6 +58,8 @@ hl.on("hyprland.start", function()
 
     hl.exec_cmd("gnome-keyring-daemon --start --components=pkcs11,secrets")
 
+    hl.exec_cmd("~/.config/scripts/battery-notify.py")
+
 end)
 
 -------------------------------
@@ -139,8 +141,8 @@ hl.config({
 
         blur = {
             enabled   = true,
-            size      = 3,
-            passes    = 1,
+            size      = 6,
+            passes    = 3,
             vibrancy  = 0.1696,
         },
     },
@@ -162,9 +164,11 @@ hl.curve("easy",           { type = "spring", mass = 1, stiffness = 71.2633, dam
 
 hl.animation({ leaf = "global",        enabled = true,  speed = 10,   bezier = "default" })
 hl.animation({ leaf = "border",        enabled = true,  speed = 5.39, bezier = "easeOutQuint" })
-hl.animation({ leaf = "windows",       enabled = true,  speed = 4.79, spring = "easy" })
--- hl.animation({ leaf = "windowsIn",     enabled = true,  speed = 4.1,  spring = "easy",         style = "popin 87%" })
--- hl.animation({ leaf = "windowsOut",    enabled = true,  speed = 1.49, bezier = "linear"})
+hl.animation({ leaf = "windows",       enabled = true,  speed = 4.79, bezier = "easeOutQuint" })
+hl.animation({ leaf = "windowsIn",     enabled = true,  speed = 4.1,  spring = "easy",         style = "popin 87%" })
+-- hl.animation({ leaf = "windowsOut",    enabled = true,  speed = 1.49, bezier = "quick"})
+-- hl.animation({ leaf = "windowsOut", enabled = true, speed = 5, bezier = "quick", style = "slide" })
+hl.animation({ leaf = "windowsOut", enabled = true, speed = 4, bezier = "easeOutQuint", style = "gnome" })
 hl.animation({ leaf = "fadeIn",        enabled = true,  speed = 1.73, bezier = "almostLinear" })
 hl.animation({ leaf = "fadeOut",       enabled = true,  speed = 1.46, bezier = "almostLinear" })
 hl.animation({ leaf = "fade",          enabled = true,  speed = 3.03, bezier = "quick" })
@@ -268,7 +272,7 @@ hl.gesture({
     fingers = 3,
     direction = "vertical",
     action = "workspace",
-    scale = 10.0
+    scale = 5.0
 })
 
 -- switch windows in scrolling layout
