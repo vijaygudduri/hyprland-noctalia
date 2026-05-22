@@ -163,19 +163,19 @@ hl.config({
 -- Curves
 hl.curve("overshoot", { type = "bezier", points = { { 0.05, 0.9 }, { 0.1, 1.1 } } })
 hl.curve("gnomeOut",  { type = "bezier", points = { { 0.25, 1.0 }, { 0.5, 1.0 } } })
-hl.curve("easeOut", { type = "bezier", points = { { 0.16, 1 }, { 0.3, 1 } } })
+hl.curve("easeOut",   { type = "bezier", points = { { 0.16, 1 },   { 0.3, 1 } } })
+hl.curve("snapOut",   { type = "bezier", points = { { 0.3, 1 },    { 0.5, 1 } } })
 
 -- Animations
--- 1. Explicitly clear the style parameter off the root 'windows' engine
 hl.animation({ leaf = "windows", enabled = true, speed = 7, bezier = "overshoot" })
-
--- 2. Explicitly separate your opening style (In) and closing style (Out)
 hl.animation({ leaf = "windowsIn", enabled = true, speed = 5, bezier = "easeOut", style = "slide" })
-hl.animation({ leaf = "windowsOut", enabled = true, speed = 4, bezier = "gnomeOut", style = "gnome" })
-
--- 3. The moving engine and workspace engines
+hl.animation({ leaf = "windowsOut", enabled = true, speed = 3, bezier = "snapOut", style = "gnome" })
 hl.animation({ leaf = "windowsMove", enabled = true, speed = 6, bezier = "easeOut" })
 hl.animation({ leaf = "workspaces", enabled = true, speed = 6, bezier = "overshoot", style = "slidefadevert 20%" })
+hl.animation({ leaf = "layersIn", enabled = true, speed = 5, bezier = "easeOut", style = "slide" })
+hl.animation({ leaf = "layersOut", enabled = true, speed = 4, bezier = "snapOut", style = "slide" })
+hl.animation({ leaf = "fadeIn", enabled = true, speed = 5, bezier = "easeOut" })
+hl.animation({ leaf = "fadeOut", enabled = true, speed = 3, bezier = "snapOut" })
 
 
 -- Ref https://wiki.hypr.land/Configuring/Basics/Workspace-Rules/
@@ -228,7 +228,6 @@ hl.config({
         disable_hyprland_logo   = false, -- If true disables the random hyprland logo / anime girl background. :(
     },
 })
-
 
 ---------------
 ---- INPUT ----
