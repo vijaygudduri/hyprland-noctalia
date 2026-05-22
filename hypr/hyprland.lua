@@ -163,7 +163,6 @@ hl.config({
 -- Curves
 hl.curve("overshoot", { type = "bezier", points = { { 0.05, 0.9 }, { 0.1, 1.1 } } })
 hl.curve("gnomeOut",  { type = "bezier", points = { { 0.25, 1.0 }, { 0.5, 1.0 } } })
-hl.curve("shiftIn", { type = "bezier", points = { { 0.22, 1 }, { 0.36, 1 } } })
 hl.curve("easeOut", { type = "bezier", points = { { 0.16, 1 }, { 0.3, 1 } } })
 
 -- Animations
