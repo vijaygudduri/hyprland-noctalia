@@ -168,7 +168,7 @@ hl.curve("snapOut",   { type = "bezier", points = { { 0.3, 1 },    { 0.5, 1 } } 
 
 -- Animations
 hl.animation({ leaf = "windows", enabled = true, speed = 7, bezier = "overshoot" })
-hl.animation({ leaf = "windowsIn", enabled = true, speed = 5, bezier = "easeOut", style = "slide" })
+hl.animation({ leaf = "windowsIn", enabled = true, speed = 5, bezier = "easeOut", style = "slide right" })
 hl.animation({ leaf = "windowsOut", enabled = true, speed = 3, bezier = "snapOut", style = "gnome" })
 hl.animation({ leaf = "windowsMove", enabled = true, speed = 6, bezier = "easeOut" })
 hl.animation({ leaf = "workspaces", enabled = true, speed = 6, bezier = "overshoot", style = "slidefadevert 20%" })
@@ -383,6 +383,11 @@ hl.bind(mainMod .. " + W", hl.dsp.window.drag())
 -- resize window
 hl.bind(mainMod .. " + A", hl.dsp.window.resize())
 
+
+hl.bind(mainMod .. " + period", hl.dsp.layout("colresize 0.5"))
+hl.bind(mainMod .. " + comma", hl.dsp.layout("colresize 1"))
+
+
 --------------------------------
 ---- WINDOWS AND WORKSPACES ----
 --------------------------------
@@ -527,4 +532,15 @@ hl.layer_rule({
     },
 
     blur = true,
+})
+
+-- Blur noctalia-shell
+hl.layer_rule({
+  name = "noctalia",
+  match = {
+    namespace = "^noctalia-(bar-.+|notification|dock|panel)$",
+  },
+  ignore_alpha = 0.5,
+  blur = true,
+  blur_popups = true,
 })
