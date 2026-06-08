@@ -39,7 +39,11 @@
 6.  **Install noctalia-shell**
 
       ```bash
-      sudo pacman -S noctalia-shell
+      sudo pacman -S noctalia-git
+      ```
+
+      ```bash
+      cp ~/hyprland-noctalia/noctalia-config.toml ~/.config/noctalia
       ```
 
 7.  **Download Candy icon theme & extract it to ~/.icons and Apply themes from nwg-look**
