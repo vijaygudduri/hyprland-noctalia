@@ -40,7 +40,7 @@ type = "screen_recorder"
 
 [desktop_widgets]
 schema_version = 2
-widget_order = [ "desktop-widget-0000000000000001", "desktop-widget-0000000000000002" ]
+widget_order = [ "desktop-widget-0000000000000001" ]
 
     [desktop_widgets.grid]
     cell_size = 16
@@ -55,18 +55,6 @@ widget_order = [ "desktop-widget-0000000000000001", "desktop-widget-000000000000
     output = "eDP-1"
     rotation = 0.0
     type = "clock"
-
-    [desktop_widgets.widget.desktop-widget-0000000000000002]
-    box_height = 0.0
-    box_width = 0.0
-    cx = 160.0
-    cy = 342.0
-    output = "eDP-1"
-    rotation = 0.0
-    type = "weather"
-
-[location]
-address = "Bayyaram, india"
 
 [osd]
 position = "top_center"
