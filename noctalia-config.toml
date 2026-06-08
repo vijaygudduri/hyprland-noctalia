@@ -46,7 +46,9 @@ settings_show_advanced = true
 telemetry_enabled = true
 
     [shell.panel]
+    control_center_placement = "floating"
     open_near_click_control_center = true
+    transparency_mode = "soft"
 
 [system.monitor]
 network_poll_seconds = 2
