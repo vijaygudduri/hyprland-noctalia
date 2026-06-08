@@ -80,6 +80,18 @@ mode = "dark"
 source = "wallpaper"
 wallpaper_scheme = "m3-content"
 
+[wallpaper]
+directory = "/home/vijay/Pictures/Wallpapers"
+
+    [wallpaper.default]
+    path = "/home/vijay/Pictures/Wallpapers/Kath.png"
+
+    [wallpaper.last]
+    path = "/home/vijay/Pictures/Wallpapers/Kath.png"
+
+    [wallpaper.monitors.eDP-1]
+    path = "/home/vijay/Pictures/Wallpapers/Kath.png"
+
 [widget.battery]
 color = "#8CE2FF"
 display_mode = "graphic"
