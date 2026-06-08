@@ -1,0 +1,117 @@
+[bar.default]
+background_opacity = 0.74999998323619366
+capsule = true
+center = [ "battery", "date", "clock", "custom_button-2" ]
+end = [ "group:g1", "network", "bluetooth", "notifications" ]
+margin_edge = 0
+margin_ends = 20
+scale = 1.1000000000000001
+start = [ "screenshot", "volume", "brightness", "taskbar", "tray" ]
+thickness = 39
+
+    [[bar.default.capsule_group]]
+    fill = "#262626"
+    id = "g1"
+    members = [ "network_rx", "network_tx" ]
+    opacity = 1.0
+    padding = 6.0
+
+[calendar]
+enabled = true
+
+[[control_center.shortcuts]]
+type = "wifi"
+
+[[control_center.shortcuts]]
+type = "bluetooth"
+
+[[control_center.shortcuts]]
+type = "caffeine"
+
+[[control_center.shortcuts]]
+type = "nightlight"
+
+[[control_center.shortcuts]]
+type = "notification"
+
+[[control_center.shortcuts]]
+type = "screen_recorder"
+
+[hooks]
+battery_charging = "notify-send \"POWER\" \"Charger Connected\" -h boolean:transient:true"
+battery_discharging = "notify-send \"POWER\" \"Charger Disconnected\" -h boolean:transient:true"
+
+[osd]
+position = "top_center"
+
+[shell]
+screen_time_enabled = true
+settings_show_advanced = true
+telemetry_enabled = true
+
+    [shell.panel]
+    open_near_click_control_center = true
+
+[system.monitor]
+network_poll_seconds = 2
+
+[theme]
+builtin = "ADW"
+community_palette = "Hexa34C"
+custom_palette = "Ayu"
+mode = "dark"
+source = "wallpaper"
+wallpaper_scheme = "Hexa34C"
+
+[widget.battery]
+color = "#8CE2FF"
+display_mode = "graphic"
+
+[widget.bluetooth]
+color = "#8EC1FF"
+scale = 1.1000000000000001
+
+[widget.brightness]
+color = "#DBFD87"
+scroll_step = 1
+
+[widget.clock]
+color = "#FFFB8C"
+
+[widget.control-center]
+color = "#8FFE97"
+
+[widget.custom_button-2]
+color = "#FF8CEB"
+command = "noctalia msg panel-open control-center"
+glyph = "noctalia"
+middle_command = "noctalia msg panel-open control-center audio"
+right_command = "noctalia msg panel-open control-center monitor"
+type = "custom_button"
+
+[widget.date]
+color = "#8CFF97"
+
+[widget.network]
+color = "#8EFFD7"
+
+[widget.network_rx]
+color = "#DDFFB1"
+display = "text"
+
+[widget.network_tx]
+color = "#DDFFB1"
+display = "text"
+
+[widget.notifications]
+color = "#EEFF33"
+scale = 1.1000000000000001
+
+[widget.screenshot]
+color = "#FF73C9"
+
+[widget.taskbar]
+color = "#59F7EC"
+
+[widget.volume]
+color = "#87FDE0"
