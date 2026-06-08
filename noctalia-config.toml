@@ -1,6 +1,7 @@
 [bar.default]
 background_opacity = 0.74999998323619366
 capsule = true
+capsule_fill = "#1E1F27"
 center = [ "battery", "date", "clock", "custom_button-2" ]
 end = [ "group:g1", "network", "bluetooth", "notifications" ]
 margin_edge = 0
@@ -10,7 +11,7 @@ start = [ "screenshot", "volume", "brightness", "taskbar", "tray" ]
 thickness = 39
 
     [[bar.default.capsule_group]]
-    fill = "#262626"
+    fill = "#1E1F27"
     id = "g1"
     members = [ "network_rx", "network_tx" ]
     opacity = 1.0
@@ -36,6 +37,36 @@ type = "notification"
 
 [[control_center.shortcuts]]
 type = "screen_recorder"
+
+[desktop_widgets]
+schema_version = 2
+widget_order = [ "desktop-widget-0000000000000001", "desktop-widget-0000000000000002" ]
+
+    [desktop_widgets.grid]
+    cell_size = 16
+    major_interval = 4
+    visible = true
+
+    [desktop_widgets.widget.desktop-widget-0000000000000001]
+    box_height = 160.0
+    box_width = 256.0
+    cx = 160.0
+    cy = 184.0
+    output = "eDP-1"
+    rotation = 0.0
+    type = "clock"
+
+    [desktop_widgets.widget.desktop-widget-0000000000000002]
+    box_height = 0.0
+    box_width = 0.0
+    cx = 160.0
+    cy = 342.0
+    output = "eDP-1"
+    rotation = 0.0
+    type = "weather"
+
+[location]
+address = "Bayyaram, india"
 
 [osd]
 position = "top_center"
