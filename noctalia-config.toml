@@ -37,10 +37,6 @@ type = "notification"
 [[control_center.shortcuts]]
 type = "screen_recorder"
 
-[hooks]
-battery_charging = "notify-send \"POWER\" \"Charger Connected\" -h boolean:transient:true"
-battery_discharging = "notify-send \"POWER\" \"Charger Disconnected\" -h boolean:transient:true"
-
 [osd]
 position = "top_center"
 
