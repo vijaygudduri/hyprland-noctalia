@@ -78,7 +78,7 @@ community_palette = "Hexa34C"
 custom_palette = "Ayu"
 mode = "dark"
 source = "wallpaper"
-wallpaper_scheme = "Hexa34C"
+wallpaper_scheme = "m3-content"
 
 [widget.battery]
 color = "#8CE2FF"
