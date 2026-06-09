@@ -7,7 +7,7 @@ end = [ "group:g1", "network", "bluetooth", "notifications" ]
 margin_edge = 0
 margin_ends = 20
 scale = 1.1000000000000001
-start = [ "screenshot", "volume", "brightness", "taskbar", "tray" ]
+start = [ "volume", "brightness", "taskbar", "tray" ]
 thickness = 39
 
     [[bar.default.capsule_group]]
@@ -135,9 +135,6 @@ display = "text"
 [widget.notifications]
 color = "#EEFF33"
 scale = 1.1000000000000001
-
-[widget.screenshot]
-color = "#FF73C9"
 
 [widget.taskbar]
 color = "#59F7EC"
