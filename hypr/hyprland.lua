@@ -364,12 +364,12 @@ hl.bind(mainMod .. " + X", hl.dsp.exec_cmd("google-chrome-stable"))
 
 -- full screenshot
 hl.bind(mainMod .. " + SHIFT + Insert", function()
-    hl.exec_cmd("mkdir -p ~/Pictures/screenshots && grimblast copysave screen ~/Pictures/screenshots/$(date +%Y-%m-%d_%H:%M:%S).png && notify-send -h int:transient:1 'Screenshot saved'")
+    hl.exec_cmd("noctalia msg screenshot-fullscreen")
 end)
 
 -- area screenshot
 hl.bind(mainMod .. " + Insert", function()
-    hl.exec_cmd("mkdir -p ~/Pictures/screenshots && grimblast copysave area ~/Pictures/screenshots/$(date +%Y-%m-%d_%H:%M:%S).png && notify-send -h int:transient:1 'Area screenshot saved'")
+    hl.exec_cmd("noctalia msg screenshot-region")
 end)
 
 -- hyprlock
