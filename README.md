@@ -9,7 +9,7 @@
 2.  **Install necessaries**
 
       ```bash      
-      sudo pacman -S --needed --noconfirm nwg-drawer nwg-look polkit-gnome gnome-keyring xdg-desktop-portal-hyprland hypridle hyprlock wl-clipboard wl-clip-persist gnome-calculator gnome-text-editor gnome-clocks blueman nemo smplayer swappy evince brightnessctl playerctl python-dbus-next jq xorg-xrdb
+      sudo pacman -S --needed --noconfirm nwg-drawer nwg-look polkit-gnome gnome-keyring xdg-desktop-portal-hyprland hypridle hyprlock wl-clipboard wl-clip-persist gnome-calculator gnome-text-editor gnome-clocks blueman nautilus smplayer swappy evince brightnessctl playerctl python-dbus-next jq xorg-xrdb
       ```
 
       ```bash
@@ -29,7 +29,7 @@
       ```
       
       ```bash
-      cp -r Wallpapers ~/Pictures/ && cp .zshrc_myconfigs ~ && cp -r fastfetch hypr kitty nwg-drawer scripts chrome-flags.conf ~/.config/
+      cp -r Wallpapers/* ~/Pictures/Wallpapers/ && cp .zshrc_myconfigs ~ && cp -r fastfetch hypr kitty nwg-drawer scripts chrome-flags.conf ~/.config/
       ```
 
       ```bash
@@ -39,7 +39,7 @@
 6.  **Install noctalia-shell**
 
       ```bash
-      sudo pacman -S noctalia-git
+      paru -S noctalia-git
       ```
 
       ```bash
