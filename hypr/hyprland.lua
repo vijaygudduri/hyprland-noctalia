@@ -53,13 +53,11 @@ hl.on("hyprland.start", function()
 
     hl.exec_cmd("noctalia")
 
-    hl.exec_cmd("hypridle")
-
     hl.exec_cmd("/usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1")
 
     hl.exec_cmd("gnome-keyring-daemon --start --components=pkcs11,secrets")
 
-    hl.exec_cmd("~/.config/scripts/battery-notify.py")
+    -- hl.exec_cmd("~/.config/scripts/media-pause.sh")
 
     hl.exec_cmd("wl-paste --watch clipvault store --max-entries 200 --max-entry-age 2d")
 
@@ -374,7 +372,7 @@ end)
 
 -- hyprlock
 hl.bind(mainMod .. " + L", hl.dsp.exec_cmd(
-    "sh -c 'playerctl pause 2>/dev/null; hyprlock'"
+    "sh -c 'playerctl pause 2>/dev/null; noctalia msg session lock'"
 ))
 
 -- move window
@@ -383,10 +381,22 @@ hl.bind(mainMod .. " + W", hl.dsp.window.drag())
 -- resize window
 hl.bind(mainMod .. " + A", hl.dsp.window.resize())
 
-
+-- resize window
 hl.bind(mainMod .. " + period", hl.dsp.layout("colresize 0.5"))
 hl.bind(mainMod .. " + comma", hl.dsp.layout("colresize 1"))
 
+-- Lock the screen when closing the lid
+hl.bind(
+    "switch:on:Lid Switch",
+    hl.dsp.exec_cmd("hyprctl dispatch 'hl.dsp.dpms({ action = \"disable\" })' && noctalia msg session lock"),
+    { locked = true }
+)
+
+hl.bind(
+    "switch:off:Lid Switch",
+    hl.dsp.exec_cmd("hyprctl dispatch 'hl.dsp.dpms({ action = \"enable\" })'"),
+    { locked = true }
+)
 
 --------------------------------
 ---- WINDOWS AND WORKSPACES ----
@@ -445,15 +455,15 @@ hl.window_rule({
     size  = {800, 600}
 })
 
--- smplayer choose file
+-- file/folder dialogues
 hl.window_rule({
     match = {
-        class = "Smplayer",
-        title = "Choose a file",
+        xwayland = 1,
+        title = "^([Oo]pen|[Ss]ave|[Cc]hoose|[Ss]elect|[Pp]ick) .*([Ff]ile|[Ff]older|[Dd]irectory|[Ff]iles).*",
     },
     float = true,
-    size = {773, 480},
-    move = {575, 384}
+    size = {800, 500},
+    move = {560, 290}
 })
 
 -- Pavucontrol
