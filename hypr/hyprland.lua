@@ -370,7 +370,7 @@ hl.bind(mainMod .. " + Insert", function()
     hl.exec_cmd("noctalia msg screenshot-region")
 end)
 
--- hyprlock
+-- lock
 hl.bind(mainMod .. " + L", hl.dsp.exec_cmd(
     "sh -c 'playerctl pause 2>/dev/null; noctalia msg session lock'"
 ))
