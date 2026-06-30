@@ -75,12 +75,8 @@ namespace {
     return formatLocalTime("%A, %B %d, %Y");
   }
 
-  std::string formatVolumePercent(float volume) {
-    return std::to_string(static_cast<int>(std::round(volume * 100.0f))) + "%";
-  }
-
-  std::string formatBrightnessPercent(float brightness) {
-    return std::to_string(static_cast<int>(std::round(brightness * 100.0f))) + "%";
+  std::string formatPercent(float fraction) {
+    return std::to_string(static_cast<int>(std::round(fraction * 100.0f))) + "%";
   }
 
   std::string userHostLine() { return std::format("{}@{}", sessionDisplayName(), hostName()); }
@@ -142,16 +138,11 @@ namespace {
     }
   }
 
-  void applyAvatarChrome(Image* avatar, bool highlighted) {
+  void applyAvatarChrome(Image* avatar) {
     if (avatar == nullptr) {
       return;
     }
-    const float borderWidth = Style::borderWidth * 3.0f;
-    if (highlighted) {
-      avatar->setBorder(colorSpecFromRole(ColorRole::Primary), borderWidth);
-      return;
-    }
-    avatar->setBorder(colorSpecFromRole(ColorRole::Primary), borderWidth);
+    avatar->setBorder(colorSpecFromRole(ColorRole::Primary), Style::borderWidth * 3.0f);
   }
 
 } // namespace
@@ -299,9 +290,7 @@ std::unique_ptr<Flex> HomeTab::create() {
       })
   );
   const auto syncAvatarChrome = [this]() {
-    const bool highlighted =
-        m_userAvatarArea != nullptr && (m_userAvatarArea->focused() || m_userAvatarArea->hovered());
-    applyAvatarChrome(m_userAvatar, highlighted);
+    applyAvatarChrome(m_userAvatar);
     PanelManager::instance().requestRedraw();
   };
   avatarArea->setOnEnter([syncAvatarChrome](const InputArea::PointerData&) { syncAvatarChrome(); });
@@ -442,7 +431,7 @@ std::unique_ptr<Flex> HomeTab::create() {
           m_pendingSinkId = currentSink != nullptr ? currentSink->id : 0;
           m_pendingSinkVolume = static_cast<float>(std::clamp(value, 0.0, 1.0));
           if (m_volumeLabel != nullptr) {
-            m_volumeLabel->setText(formatVolumePercent(m_pendingSinkVolume));
+            m_volumeLabel->setText(formatPercent(m_pendingSinkVolume));
           }
           m_volumeDebounceTimer.start(std::chrono::milliseconds(80), [this]() {
             if (m_audio != nullptr && m_pendingSinkVolume >= 0.0f) {
@@ -463,7 +452,7 @@ std::unique_ptr<Flex> HomeTab::create() {
     volRow->addChild(std::move(volSlider));
     volRow->addChild(ui::label({
         .out = &m_volumeLabel,
-        .text = formatVolumePercent(currentVolume),
+        .text = formatPercent(currentVolume),
         .fontSize = Style::fontSizeBody * scale,
         .color = colorSpecFromRole(ColorRole::OnSurfaceVariant),
         .minWidth = labelMinWidth,
@@ -513,7 +502,7 @@ std::unique_ptr<Flex> HomeTab::create() {
           m_pendingBrightnessValue = brightness;
           m_pendingBrightness = true;
           if (m_brightnessLabel != nullptr) {
-            m_brightnessLabel->setText(formatBrightnessPercent(brightness));
+            m_brightnessLabel->setText(formatPercent(brightness));
           }
           m_brightnessDebounceTimer.start(std::chrono::milliseconds(80), [this]() {
             if (m_brightness != nullptr && m_pendingBrightness && !m_primaryDisplayId.empty()) {
@@ -534,7 +523,7 @@ std::unique_ptr<Flex> HomeTab::create() {
     brightRow->addChild(std::move(brightSlider));
     brightRow->addChild(ui::label({
         .out = &m_brightnessLabel,
-        .text = formatBrightnessPercent(currentBrightness),
+        .text = formatPercent(currentBrightness),
         .fontSize = Style::fontSizeBody * scale,
         .color = colorSpecFromRole(ColorRole::OnSurfaceVariant),
         .minWidth = labelMinWidth,
@@ -601,7 +590,7 @@ std::unique_ptr<Flex> HomeTab::create() {
       .text = "—",
       .fontSize = dateWeatherFontSize,
       .color = colorSpecFromRole(ColorRole::Primary),
-      .textAlign = TextAlign::Center,   // optional, safe to keep
+      .textAlign = TextAlign::Center,
   }));
   infoCard->addChild(std::move(weatherRow));
 
@@ -650,30 +639,14 @@ std::unique_ptr<Flex> HomeTab::create() {
             [this, padIdx]() {
               if (padIdx < m_shortcutPads.size()) {
                 m_shortcutPads[padIdx].shortcut->onClick();
-                PanelManager::instance().refresh();
-                m_shortcutSyncTicksRemaining = 8;
-                m_shortcutSyncTimer.startRepeating(std::chrono::milliseconds(150), [this]() {
-                  syncShortcuts();
-                  PanelManager::instance().refresh();
-                  if (--m_shortcutSyncTicksRemaining <= 0) {
-                    m_shortcutSyncTimer.stop();
-                  }
-                });
+                kickShortcutResync();
               }
             },
         .onRightClick =
             [this, padIdx]() {
               if (padIdx < m_shortcutPads.size()) {
                 m_shortcutPads[padIdx].shortcut->onRightClick();
-                PanelManager::instance().refresh();
-                m_shortcutSyncTicksRemaining = 8;
-                m_shortcutSyncTimer.startRepeating(std::chrono::milliseconds(150), [this]() {
-                  syncShortcuts();
-                  PanelManager::instance().refresh();
-                  if (--m_shortcutSyncTicksRemaining <= 0) {
-                    m_shortcutSyncTimer.stop();
-                  }
-                });
+                kickShortcutResync();
               }
             },
         .configure =
@@ -695,15 +668,7 @@ std::unique_ptr<Flex> HomeTab::create() {
           return false;
         }
         m_shortcutPads[padIdx].shortcut->onScroll(data.scrollDelta(1.0f) > 0 ? -1 : 1);
-        PanelManager::instance().refresh();
-        m_shortcutSyncTicksRemaining = 8;
-        m_shortcutSyncTimer.startRepeating(std::chrono::milliseconds(150), [this]() {
-          syncShortcuts();
-          PanelManager::instance().refresh();
-          if (--m_shortcutSyncTicksRemaining <= 0) {
-            m_shortcutSyncTimer.stop();
-          }
-        });
+        kickShortcutResync();
         return true;
       });
     }
@@ -712,6 +677,12 @@ std::unique_ptr<Flex> HomeTab::create() {
     pad.button = btnPtr;
     pad.glyph = btnPtr->glyph();
     pad.label = btnPtr->label();
+    // Mirrors the initial style applied by the .configure callback above, so the
+    // first syncShortcuts() pass doesn't immediately redo work that was just done.
+    pad.styleInitialized = true;
+    pad.styleEnabled = enabled;
+    pad.styleActive = isActive;
+    pad.styleFillOpacity = panelCardOpacity();
     m_shortcutPads.push_back(std::move(pad));
     grid->addChild(std::move(btn));
   }
@@ -929,7 +900,7 @@ void HomeTab::syncVolumeSlider() {
     m_volumeSlider->setValue(static_cast<double>(displayVolume));
     m_volumeSlider->setEnabled(true);
     if (m_volumeLabel != nullptr) {
-      m_volumeLabel->setText(formatVolumePercent(displayVolume));
+      m_volumeLabel->setText(formatPercent(displayVolume));
     }
   }
   m_syncingVolume = false;
@@ -969,7 +940,7 @@ void HomeTab::syncBrightnessSlider() {
   m_brightnessSlider->setValue(static_cast<double>(display->brightness));
   m_syncingBrightness = false;
   if (m_brightnessLabel != nullptr) {
-    m_brightnessLabel->setText(formatBrightnessPercent(display->brightness));
+    m_brightnessLabel->setText(formatPercent(display->brightness));
   }
   if (m_brightnessGlyph != nullptr) {
     m_brightnessGlyph->setGlyph("brightness-high");
@@ -1048,14 +1019,35 @@ void HomeTab::sync(Renderer& renderer) {
   }
 }
 
+void HomeTab::kickShortcutResync() {
+  PanelManager::instance().refresh();
+  m_shortcutSyncTicksRemaining = 8;
+  m_shortcutSyncTimer.startRepeating(std::chrono::milliseconds(150), [this]() {
+    syncShortcuts();
+    PanelManager::instance().refresh();
+    if (--m_shortcutSyncTicksRemaining <= 0) {
+      m_shortcutSyncTimer.stop();
+    }
+  });
+}
+
 void HomeTab::syncShortcuts() {
+  const float fillOpacity = panelCardOpacity();
   for (auto& pad : m_shortcutPads) {
     auto& sc = *pad.shortcut;
     const bool enabled = sc.enabled();
     const bool on = sc.isToggle() && sc.active();
 
     if (pad.button != nullptr) {
-      applyShortcutButtonStyle(*pad.button, enabled, on, panelCardOpacity());
+      const bool styleChanged = !pad.styleInitialized || pad.styleEnabled != enabled || pad.styleActive != on ||
+                                 pad.styleFillOpacity != fillOpacity;
+      if (styleChanged) {
+        applyShortcutButtonStyle(*pad.button, enabled, on, fillOpacity);
+        pad.styleInitialized = true;
+        pad.styleEnabled = enabled;
+        pad.styleActive = on;
+        pad.styleFillOpacity = fillOpacity;
+      }
     }
     if (pad.glyph != nullptr) {
       pad.glyph->setGlyph(sc.displayIcon());
