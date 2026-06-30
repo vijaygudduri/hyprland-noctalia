@@ -89,25 +89,31 @@ namespace {
 
   void applyShortcutButtonStyle(Button& button, bool enabled, bool active, float fillOpacity) {
     if (enabled && active) {
+      // Keep the same fill color the default (inactive) palette uses, so the tile
+      // background never changes — only the border/icon highlight differs when active.
+      const Button::ButtonPalette basePalette = Button::defaultPalette(ButtonVariant::Default);
+      auto backgroundOf = [](const Button::ButtonStateColors& colors) {
+        auto [bg, border, content] = colors;
+        return bg;
+      };
+
+      const Button::ButtonStateColors activeNormal{
+          backgroundOf(basePalette.normal),
+          colorSpecFromRole(ColorRole::Primary),
+          colorSpecFromRole(ColorRole::Primary),
+      };
+
       Button::ButtonPalette activePalette{
           .borderWidth = Style::borderWidth * 2.5f,
-          .normal = Button::ButtonStateColors{
-              colorSpecFromRole(ColorRole::Surface),
-              colorSpecFromRole(ColorRole::Primary),
-              colorSpecFromRole(ColorRole::Primary),
-          },
-          .hover = Button::ButtonStateColors{
-              colorSpecFromRole(ColorRole::Surface),
-              colorSpecFromRole(ColorRole::Primary),
-              colorSpecFromRole(ColorRole::Primary),
-          },
+          .normal = activeNormal,
+          .hover = activeNormal,  // hover disabled: same as normal
           .pressed = Button::ButtonStateColors{
-              colorSpecFromRole(ColorRole::Surface),
+              backgroundOf(basePalette.pressed),
               colorSpecFromRole(ColorRole::Primary),
               colorSpecFromRole(ColorRole::Primary),
           },
           .disabled = Button::ButtonStateColors{
-              colorSpecFromRole(ColorRole::Surface, 0.55f),
+              backgroundOf(basePalette.disabled),
               colorSpecFromRole(ColorRole::Primary, 0.55f),
               colorSpecFromRole(ColorRole::Primary, 0.55f),
           },
@@ -115,7 +121,9 @@ namespace {
       };
       button.setCustomPalette(activePalette);
     } else {
-      button.setCustomPalette(Button::defaultPalette(ButtonVariant::Default));
+      Button::ButtonPalette inactivePalette = Button::defaultPalette(ButtonVariant::Default);
+      inactivePalette.hover = inactivePalette.normal;  // hover disabled: same as normal
+      button.setCustomPalette(inactivePalette);
     }
     button.setSurfaceOpacity(fillOpacity);
     button.setEnabled(enabled);
