@@ -102,12 +102,8 @@ namespace {
       Button::ButtonPalette activePalette{
           .borderWidth = Style::borderWidth * 2.5f,
           .normal = activeNormal,
-          .hover = activeNormal,  // hover disabled: same as normal
-          .pressed = Button::ButtonStateColors{
-              backgroundOf(basePalette.pressed),
-              colorSpecFromRole(ColorRole::Primary),
-              colorSpecFromRole(ColorRole::Primary),
-          },
+          .hover = activeNormal,    // hover disabled: same as normal
+          .pressed = activeNormal,  // keep fill uniform on press too — only border/icon distinguish active state
           .disabled = Button::ButtonStateColors{
               backgroundOf(basePalette.disabled),
               colorSpecFromRole(ColorRole::Primary, 0.55f),
@@ -118,7 +114,8 @@ namespace {
       button.setCustomPalette(activePalette);
     } else {
       Button::ButtonPalette inactivePalette = Button::defaultPalette(ButtonVariant::Default);
-      inactivePalette.hover = inactivePalette.normal;  // hover disabled: same as normal
+      inactivePalette.hover = inactivePalette.normal;    // hover disabled: same as normal
+      inactivePalette.pressed = inactivePalette.normal;  // keep fill uniform on press too
       button.setCustomPalette(inactivePalette);
     }
     button.setSurfaceOpacity(fillOpacity);
