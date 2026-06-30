@@ -43,6 +43,13 @@ struct ShortcutPad {
   Button* button = nullptr;
   Glyph* glyph = nullptr;
   Label* label = nullptr;
+
+  // Cached last-applied style, so syncShortcuts() can skip redundant restyles
+  // when nothing has actually changed since the previous sync.
+  bool styleInitialized = false;
+  bool styleEnabled = false;
+  bool styleActive = false;
+  float styleFillOpacity = -1.0f;
 };
 
 class HomeTab : public Tab {
@@ -77,6 +84,7 @@ private:
   InputArea* addCardOverlay(Flex& card, std::function<void()> onActivate, CardOverlayOptions options);
   void layoutCardOverlays();
   void onPanelCardOpacityChanged(float opacity) override;
+  void kickShortcutResync();
 
   // Services
   PipeWireService* m_audio = nullptr;
@@ -151,5 +159,5 @@ private:
   Label* m_timeLabel = nullptr;
   Label* m_dateLabel = nullptr;
   Label* m_weatherLabel = nullptr;
-  Glyph* m_weatherGlyph = nullptr;   // <-- added for weather icon
+  Glyph* m_weatherGlyph = nullptr;
 };
