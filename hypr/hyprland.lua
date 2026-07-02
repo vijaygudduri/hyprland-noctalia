@@ -22,7 +22,6 @@ hl.monitor({
     scale    = "auto",
 })
 
-
 ---------------------
 ---- MY PROGRAMS ----
 ---------------------
@@ -51,15 +50,11 @@ local menu        = "nwg-drawer"
 
 hl.on("hyprland.start", function()
 
-    hl.exec_cmd("noctalia")
+    hl.exec_cmd("noctalia 2>&1 | systemd-cat -t noctalia")
 
-    hl.exec_cmd("/usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1")
+    hl.exec_cmd("gnome-keyring-daemon --start --components=pkcs11,secrets,ssh")
 
-    hl.exec_cmd("gnome-keyring-daemon --start --components=pkcs11,secrets")
-
-    -- hl.exec_cmd("~/.config/scripts/media-pause.sh")
-
-    hl.exec_cmd("wl-paste --watch clipvault store --max-entries 200 --max-entry-age 2d")
+    -- hl.exec_cmd("wl-paste --watch clipvault store --max-entries 200 --max-entry-age 2d")
 
     hl.exec_cmd("wl-clip-persist --clipboard both")
 
@@ -80,6 +75,9 @@ hl.env("XDG_CURRENT_DESKTOP", "Hyprland")
 hl.env("XDG_SESSION_TYPE", "wayland")
 hl.env("XDG_SESSION_DESKTOP", "Hyprland")
 hl.env("QT_QPA_PLATFORMTHEME", "gtk3")
+
+-- hl.env("GDK_BACKEND", "wayland,x11,*")
+-- hl.env("QT_QPA_PLATFORM", "wayland;xcb")
 
 -----------------------
 ----- PERMISSIONS -----
@@ -212,7 +210,7 @@ hl.config({
 hl.config({
     scrolling = {
         fullscreen_on_one_column = true,
-        column_width = 1
+        column_width = "1"
     },
 })
 
@@ -370,7 +368,7 @@ hl.bind(mainMod .. " + Insert", function()
     hl.exec_cmd("noctalia msg screenshot-region")
 end)
 
--- lock
+-- hyprlock
 hl.bind(mainMod .. " + L", hl.dsp.exec_cmd(
     "sh -c 'playerctl pause 2>/dev/null; noctalia msg session lock'"
 ))
@@ -455,17 +453,6 @@ hl.window_rule({
     size  = {800, 600}
 })
 
--- file/folder dialogues
-hl.window_rule({
-    match = {
-        xwayland = 1,
-        title = "^([Oo]pen|[Ss]ave|[Cc]hoose|[Ss]elect|[Pp]ick) .*([Ff]ile|[Ff]older|[Dd]irectory|[Ff]iles).*",
-    },
-    float = true,
-    size = {800, 500},
-    move = {560, 290}
-})
-
 -- Pavucontrol
 hl.window_rule({
     name = "pavucontrol-float",
@@ -531,6 +518,17 @@ hl.window_rule({
     float = true,
 
     size = "1000 1000"
+})
+
+-- Master rule for XWayland dialogues (File pickers & Torrent options)
+hl.window_rule({
+    match = {
+        xwayland = 1,
+        title = "^([Oo]pen|[Ss]ave|[Cc]hoose|[Ss]elect|[Tt]orrent) .*([Ff]ile|[Ff]older|[Dd]irectory|[Ff]iles|[Tt]orrent|[Oo]ptions).*",
+    },
+    float = true,
+    size = {800, 500},
+    move = {560, 290}
 })
 
 -- Blur nwg-drawer
