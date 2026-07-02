@@ -108,7 +108,7 @@ position = "top_center"
 enabled = [ "noctalia/screen_recorder" ]
 
 [shell]
-avatar_path = "/home/vijay/Downloads/80 Coffee_albedo.png"
+avatar_path = "/home/vijay/Pictures/Wallpapers/Coffee_albedo.png"
 polkit_agent = true
 settings_show_advanced = true
 telemetry_enabled = true
