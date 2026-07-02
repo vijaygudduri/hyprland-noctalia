@@ -9,11 +9,11 @@
 2.  **Install necessaries**
 
       ```bash      
-      sudo pacman -S --needed --noconfirm nwg-drawer nwg-look polkit-gnome gnome-keyring xdg-desktop-portal-hyprland hypridle hyprlock wl-clipboard wl-clip-persist gnome-calculator gnome-text-editor gnome-clocks blueman nautilus smplayer swappy evince brightnessctl playerctl python-dbus-next jq xorg-xrdb
+      sudo pacman -S --needed --noconfirm nwg-drawer nwg-look gnome-keyring xdg-desktop-portal-hyprland hypridle hyprlock wl-clipboard wl-clip-persist gnome-calculator gnome-text-editor gnome-clocks blueman nautilus smplayer swappy evince brightnessctl playerctl python-dbus-next jq xorg-xrdb
       ```
 
       ```bash
-      paru -S --needed --noconfirm sddm-astronaut-theme catppuccin-gtk-theme-mocha bibata-cursor-theme visual-studio-code-bin clipvault-bin
+      paru -S --needed --noconfirm sddm-astronaut-theme catppuccin-gtk-theme-mocha bibata-cursor-theme visual-studio-code-bin
       ```
 
 4.  **Clone the dotfiles repo**
@@ -33,7 +33,7 @@
       ```
 
       ```bash
-      chmod +x ~/.config/scripts/*.sh
+      chmod +x ~/.config/scripts/*.{sh,py}
       ```
 
 6.  **Install noctalia-shell**
