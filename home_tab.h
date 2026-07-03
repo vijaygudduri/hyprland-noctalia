@@ -1,6 +1,7 @@
 #pragma once
 
 #include "core/timer_manager.h"
+#include "render/core/render_styles.h"
 #include "render/core/thumbnail_service.h"
 #include "shell/control_center/control_center_services.h"
 #include "shell/control_center/shortcut_services.h"
@@ -20,6 +21,7 @@ class CompositorPlatform;
 class IpcService;
 class ConfigService;
 class DependencyService;
+class EffectNode;
 class Glyph;
 class GridView;
 class Image;
@@ -50,6 +52,11 @@ struct ShortcutPad {
   bool styleEnabled = false;
   bool styleActive = false;
   float styleFillOpacity = -1.0f;
+  std::string styleGlyph;
+
+  // Cached last-applied label max width, so doLayout() can skip redundant
+  // setMaxWidth() calls when the computed cell width hasn't actually changed.
+  float styleMaxWidth = -1.0f;
 };
 
 class HomeTab : public Tab {
@@ -155,9 +162,13 @@ private:
   GridView* m_shortcutsGrid = nullptr;
   std::vector<ShortcutPad> m_shortcutPads;
 
-  // Info Card elements
-  Label* m_timeLabel = nullptr;
-  Label* m_dateLabel = nullptr;
-  Label* m_weatherLabel = nullptr;
+  // Info Card elements (weather – matches WeatherTab's current-conditions card, minus location)
+  Flex* m_infoCard = nullptr;
   Glyph* m_weatherGlyph = nullptr;
+  Label* m_weatherTempLabel = nullptr;
+  Label* m_weatherHiLoLabel = nullptr;
+  Label* m_weatherDescLabel = nullptr;
+  EffectNode* m_weatherEffectNode = nullptr;
+  EffectType m_weatherActiveEffect = EffectType::None;
+  float m_weatherShaderTime = 0.0f;
 };
