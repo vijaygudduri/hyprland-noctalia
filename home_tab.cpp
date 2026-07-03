@@ -3,7 +3,7 @@
 #include "config/config_service.h"
 #include "core/build_info.h"
 #include "core/deferred_call.h"
-#include "core/keybind_matcher.h"
+#include "core/input/keybind_matcher.h"
 #include "core/log.h"
 #include "cursor-shape-v1-client-protocol.h"
 #include "dbus/accounts/accounts_service.h"
@@ -11,6 +11,7 @@
 #include "notification/notifications.h"
 #include "pipewire/pipewire_service.h"
 #include "render/animation/animation_manager.h"
+#include "render/scene/effect_node.h"
 #include "render/scene/input_area.h"
 #include "shell/control_center/shortcut_registry.h"
 #include "shell/panel/panel_button_style.h"
@@ -42,11 +43,9 @@ namespace {
 
   constexpr Logger kLog("control-center");
 
-  constexpr float kHomeAvatarScale = 2.15f;
+  constexpr float kHomeAvatarScale = 2.45f;
   constexpr std::size_t kHomeShortcutGridColumns = 3;
   constexpr std::size_t kHomeStackedShortcutMax = 2;
-  constexpr float kHomeShortcutSquareTrim = 0.82f;
-  constexpr float kVolumeBrightnessLabelWidth = 3.2f;
 
   float homeAvatarSize(float scale) { return Style::controlHeightLg * kHomeAvatarScale * scale; }
 
@@ -64,15 +63,32 @@ namespace {
     return {};
   }
 
-  // Time/date helpers – date format now includes full year
-  std::string formatShellTime(const ConfigService* config) {
-    const char* format = config != nullptr ? config->config().shell.timeFormat.c_str() : "{:%H:%M}";
-    return formatLocalTime(format);
-  }
+  // Set to a specific effect to bypass weather-code detection. Reset to None when done testing.
+  constexpr EffectType kHomeTestEffect = EffectType::None;
 
-  std::string formatShellDate() {
-    // Requested format: "Tuesday, June 30, 2026"
-    return formatLocalTime("%A, %B %d, %Y");
+  // Mirrors WeatherTab::effectForWeatherCode() so the home tab's info card shows the same
+  // animated background (rain/snow/cloud/fog/sun/stars) as the weather tab's current-conditions card.
+  // Kept as a local copy (not promoted to WeatherService) to keep this change scoped to home_tab only.
+  EffectType effectForWeatherCode(std::int32_t code, bool isDay) {
+    if ((code >= 51 && code <= 67) || (code >= 80 && code <= 82)) {
+      return EffectType::Rain;
+    }
+    if ((code >= 71 && code <= 77) || (code >= 85 && code <= 86)) {
+      return EffectType::Snow;
+    }
+    if (code == 3) {
+      return EffectType::Cloud;
+    }
+    if (code >= 40 && code <= 49) {
+      return EffectType::Fog;
+    }
+    if (code == 0 && isDay) {
+      return EffectType::Sun;
+    }
+    if (code == 0 && !isDay) {
+      return EffectType::Stars;
+    }
+    return EffectType::None;
   }
 
   std::string formatPercent(float fraction) {
@@ -133,13 +149,6 @@ namespace {
     } else {
       card.clearBorder();
     }
-  }
-
-  void applyAvatarChrome(Image* avatar) {
-    if (avatar == nullptr) {
-      return;
-    }
-    avatar->setBorder(colorSpecFromRole(ColorRole::Primary), Style::borderWidth * 3.0f);
   }
 
 } // namespace
@@ -280,20 +289,9 @@ std::unique_ptr<Flex> HomeTab::create() {
           .padding = 1.0f * scale,
           .width = avatarSize,
           .height = avatarSize,
-          .configure = [](Image& image) {
-            image.setBorder(colorSpecFromRole(ColorRole::Primary), Style::borderWidth * 3.0f);
-            image.setHitTestVisible(false);
-          },
+          .configure = [](Image& image) { image.setHitTestVisible(false); },
       })
   );
-  const auto syncAvatarChrome = [this]() {
-    applyAvatarChrome(m_userAvatar);
-    PanelManager::instance().requestRedraw();
-  };
-  avatarArea->setOnEnter([syncAvatarChrome](const InputArea::PointerData&) { syncAvatarChrome(); });
-  avatarArea->setOnLeave([syncAvatarChrome]() { syncAvatarChrome(); });
-  avatarArea->setOnFocusGain(syncAvatarChrome);
-  avatarArea->setOnFocusLoss(syncAvatarChrome);
 
   const auto configureUserDetailLabel = [scale](Label& label) {
     label.setShadow(Color{0.0f, 0.0f, 0.0f, 0.7f}, 0.0f, 1.5f * scale);
@@ -314,8 +312,8 @@ std::unique_ptr<Flex> HomeTab::create() {
           ui::label({
               .text = sessionDisplayName(),
               .fontSize = Style::fontSizeBody * 1.05f * scale,
-              .color = colorSpecFromRole(ColorRole::OnSurface),
               .fontWeight = FontWeight::Bold,
+              .color = colorSpecFromRole(ColorRole::OnSurface),
               .configure =
                   [scale](Label& label) { label.setShadow(Color{0.0f, 0.0f, 0.0f, 0.75f}, 0.0f, 1.5f * scale); },
           }),
@@ -537,59 +535,75 @@ std::unique_ptr<Flex> HomeTab::create() {
       .fillWidth = true,
   });
 
-  // 1. Time, Date & Weather Card (Left) – with weather icon
-  auto infoCard = ui::column({
+  // 1. Weather Card (Left) – matches WeatherTab's current-conditions card
+  //    (icon + temp + hi/lo + description + animated background), minus the location line.
+  auto infoCard = ui::row({
+      .out = &m_infoCard,
       .align = FlexAlign::Center,
       .justify = FlexJustify::Center,
-      .gap = Style::spaceXs * scale,
+      .gap = Style::spaceSm * scale,
       .padding = Style::spaceMd * scale,
+      .clipChildren = true,
       .flexGrow = 1.0f,
       .configure = [scale, opacity = panelCardOpacity(), borders = panelBordersEnabled()](Flex& card) {
         applySectionCardStyle(card, scale, opacity, borders);
+        card.setDirection(FlexDirection::Horizontal);
+        card.setAlign(FlexAlign::Center);
+        card.setJustify(FlexJustify::Center);
+        card.setPadding(Style::spaceXs * scale, Style::spaceMd * scale);
+        card.setGap(Style::spaceSm * scale);
       },
   });
 
-  // Time – larger
-  infoCard->addChild(ui::label({
-      .out = &m_timeLabel,
-      .text = "12:00 PM",
-      .fontSize = Style::fontSizeTitle * 1.8f * scale,
-      .color = colorSpecFromRole(ColorRole::OnSurface),
-      .fontWeight = FontWeight::Bold,
-      .textAlign = TextAlign::Center,
-  }));
+  auto weatherEffectNode = std::make_unique<EffectNode>();
+  weatherEffectNode->setParticipatesInLayout(false);
+  weatherEffectNode->setZIndex(-1);
+  weatherEffectNode->setVisible(false);
+  weatherEffectNode->setRadius(Style::scaledRadiusXl(scale));
+  m_weatherEffectNode = static_cast<EffectNode*>(infoCard->addChild(std::move(weatherEffectNode)));
 
-  // Date – same size as weather
-  const float dateWeatherFontSize = Style::fontSizeBody * 1.1f * scale;
-  infoCard->addChild(ui::label({
-      .out = &m_dateLabel,
-      .text = formatShellDate(),
-      .fontSize = dateWeatherFontSize,
-      .color = colorSpecFromRole(ColorRole::OnSurfaceVariant),
-      .textAlign = TextAlign::Center,
-  }));
+  const float weatherGlyphSize = Style::controlHeightLg * 1.25f * scale;
+  infoCard->addChild(ui::row(
+      {.align = FlexAlign::Center, .justify = FlexJustify::Center},
+      ui::glyph({
+          .out = &m_weatherGlyph,
+          .glyph = "weather-cloud",
+          .glyphSize = weatherGlyphSize,
+          .color = colorSpecFromRole(ColorRole::Primary),
+      })
+  ));
 
-  // Weather row: icon + label, centered as a group
-  auto weatherRow = ui::row({
+  auto weatherText = ui::column({
       .align = FlexAlign::Center,
-      .justify = FlexJustify::Center,   // <-- before .gap
+      .justify = FlexJustify::Center,
       .gap = Style::spaceXs * scale,
-      .fillWidth = true,
   });
-  weatherRow->addChild(ui::glyph({
-      .out = &m_weatherGlyph,
-      .glyph = "weather-cloud",
-      .glyphSize = dateWeatherFontSize,
-      .color = colorSpecFromRole(ColorRole::Primary),
-  }));
-  weatherRow->addChild(ui::label({
-      .out = &m_weatherLabel,
-      .text = "—",
-      .fontSize = dateWeatherFontSize,
-      .color = colorSpecFromRole(ColorRole::Primary),
+  weatherText->addChild(ui::label({
+      .out = &m_weatherTempLabel,
+      .text = "--°C",
+      .fontSize = Style::fontSizeTitle * 1.4f * scale,
+      .fontWeight = FontWeight::Bold,
+      .color = colorSpecFromRole(ColorRole::OnSurface),
+      .maxLines = 1,
       .textAlign = TextAlign::Center,
   }));
-  infoCard->addChild(std::move(weatherRow));
+  weatherText->addChild(ui::label({
+      .out = &m_weatherHiLoLabel,
+      .text = "-- / --",
+      .fontSize = Style::fontSizeBody * scale,
+      .color = colorSpecFromRole(ColorRole::Primary),
+      .maxLines = 1,
+      .textAlign = TextAlign::Center,
+  }));
+  weatherText->addChild(ui::label({
+      .out = &m_weatherDescLabel,
+      .text = "—",
+      .fontSize = Style::fontSizeBody * scale,
+      .color = colorSpecFromRole(ColorRole::OnSurface),
+      .maxLines = 1,
+      .textAlign = TextAlign::Center,
+  }));
+  infoCard->addChild(std::move(weatherText));
 
   bottomSectionRow->addChild(std::move(infoCard));
 
@@ -606,8 +620,8 @@ std::unique_ptr<Flex> HomeTab::create() {
   grid->setUniformCellSize(true);
   grid->setStretchItems(true);
   grid->setSquareCells(true);
-  grid->setMinCellHeight(Style::controlHeightLg * 1.9f * scale);
-  grid->setMinCellWidth(Style::controlHeightLg * 1.9f * scale);
+  grid->setMinCellHeight(Style::controlHeightLg * 1.75f * scale);
+  grid->setMinCellWidth(Style::controlHeightLg * 1.75f * scale);
   grid->setFlexGrow(0.0f);
   m_shortcutsGrid = grid.get();
   m_shortcutPads.clear();
@@ -680,6 +694,7 @@ std::unique_ptr<Flex> HomeTab::create() {
     pad.styleEnabled = enabled;
     pad.styleActive = isActive;
     pad.styleFillOpacity = panelCardOpacity();
+    pad.styleGlyph = pad.shortcut->displayIcon();
     m_shortcutPads.push_back(std::move(pad));
     grid->addChild(std::move(btn));
   }
@@ -749,29 +764,47 @@ void HomeTab::doLayout(Renderer& renderer, float contentWidth, float bodyHeight)
   // Shortcut label capping
   if (!m_shortcutPads.empty() && m_shortcutsGrid != nullptr) {
     const float scale = contentScale();
+
+    // All cells share the same width (grid uses uniformCellSize), so this only needs
+    // to be computed once per layout pass rather than once per pad.
+    float inner = 1.0f;
+    const Button* sampleButton = nullptr;
+    for (const auto& pad : m_shortcutPads) {
+      if (pad.button != nullptr && pad.button->width() > 1.0f) {
+        sampleButton = pad.button;
+        break;
+      }
+    }
+    if (sampleButton != nullptr) {
+      inner = std::max(1.0f, sampleButton->width() - sampleButton->paddingLeft() - sampleButton->paddingRight());
+    } else {
+      const float gridW = m_shortcutsGrid->width();
+      const float innerGrid =
+          std::max(1.0f, gridW - m_shortcutsGrid->paddingLeft() - m_shortcutsGrid->paddingRight());
+      const std::size_t cols = std::max<std::size_t>(1, std::min(m_shortcutsGrid->columns(), m_shortcutPads.size()));
+      const float cellWidth =
+          (innerGrid - static_cast<float>(cols - 1) * m_shortcutsGrid->columnGap()) / static_cast<float>(cols);
+      inner = std::max(1.0f, cellWidth - 2.0f * Style::spaceSm * scale);
+    }
+
     for (auto& pad : m_shortcutPads) {
       if (pad.label == nullptr) {
         continue;
       }
-      float inner = 1.0f;
-      if (pad.button != nullptr && pad.button->width() > 1.0f) {
-        inner = std::max(1.0f, pad.button->width() - pad.button->paddingLeft() - pad.button->paddingRight());
-      } else {
-        const float gridW = m_shortcutsGrid->width();
-        const float innerGrid =
-            std::max(1.0f, gridW - m_shortcutsGrid->paddingLeft() - m_shortcutsGrid->paddingRight());
-        const std::size_t cols =
-            std::max<std::size_t>(1, std::min(m_shortcutsGrid->columns(), m_shortcutPads.size()));
-        const float cellWidth =
-            (innerGrid - static_cast<float>(cols - 1) * m_shortcutsGrid->columnGap()) / static_cast<float>(cols);
-        inner = std::max(1.0f, cellWidth - 2.0f * Style::spaceSm * scale);
+      if (std::abs(pad.styleMaxWidth - inner) > 0.5f) {
+        pad.label->setMaxWidth(inner);
+        pad.styleMaxWidth = inner;
       }
-      pad.label->setMaxWidth(inner);
     }
   }
 
   m_rootLayout->setSize(contentWidth, bodyHeight);
   m_rootLayout->layout(renderer);
+
+  if (m_weatherEffectNode != nullptr && m_infoCard != nullptr) {
+    m_weatherEffectNode->setPosition(0.0f, 0.0f);
+    m_weatherEffectNode->setFrameSize(m_infoCard->width(), m_infoCard->height());
+  }
 }
 
 void HomeTab::doUpdate(Renderer& renderer) {
@@ -781,7 +814,14 @@ void HomeTab::doUpdate(Renderer& renderer) {
   sync(renderer);
 }
 
-void HomeTab::onFrameTick(float /*deltaMs*/) {}
+void HomeTab::onFrameTick(float deltaMs) {
+  if (m_weatherEffectNode == nullptr || !m_weatherEffectNode->visible()
+      || m_weatherActiveEffect == EffectType::None) {
+    return;
+  }
+  m_weatherShaderTime += deltaMs * 0.001f;
+  m_weatherEffectNode->setTime(m_weatherShaderTime);
+}
 
 void HomeTab::setActive(bool active) {
   const bool becameActive = active && !m_active;
@@ -832,10 +872,15 @@ void HomeTab::onClose() {
   m_pendingSinkVolume = -1.0f;
   m_pendingBrightness = false;
   m_lastBrightness = -1.0f;
-  m_timeLabel = nullptr;
-  m_dateLabel = nullptr;
-  m_weatherLabel = nullptr;
+  m_primaryDisplayId.clear();
+  m_infoCard = nullptr;
   m_weatherGlyph = nullptr;
+  m_weatherTempLabel = nullptr;
+  m_weatherHiLoLabel = nullptr;
+  m_weatherDescLabel = nullptr;
+  m_weatherEffectNode = nullptr;
+  m_weatherActiveEffect = EffectType::None;
+  m_weatherShaderTime = 0.0f;
 }
 
 void HomeTab::onPanelCardOpacityChanged(float /*opacity*/) {
@@ -979,39 +1024,78 @@ void HomeTab::sync(Renderer& renderer) {
     m_userVersion->setText(noctaliaVersionLine());
   }
 
-  // Update time, date, weather with icon
-  if (m_timeLabel != nullptr) {
-    m_timeLabel->setText(formatShellTime(m_config));
-  }
-  if (m_dateLabel != nullptr) {
-    m_dateLabel->setText(formatShellDate());
-  }
+  // Update weather card (icon, temp, hi/lo, description + animated background) –
+  // mirrors WeatherTab::sync()'s current-conditions card, minus the location line.
+  if (m_weatherGlyph != nullptr && m_weatherTempLabel != nullptr && m_weatherHiLoLabel != nullptr
+      && m_weatherDescLabel != nullptr) {
+    EffectType newEffect = EffectType::None;
 
-  if (m_weatherGlyph != nullptr && m_weatherLabel != nullptr) {
     if (m_weather == nullptr || !m_weather->enabled()) {
       m_weatherGlyph->setGlyph("weather-cloud-off");
       m_weatherGlyph->setColor(colorSpecFromRole(ColorRole::OnSurfaceVariant));
-      m_weatherLabel->setText(i18n::tr("control-center.home.weather.disabled"));
+      m_weatherTempLabel->setText("--°C");
+      m_weatherHiLoLabel->setText("-- / --");
+      m_weatherDescLabel->setText(i18n::tr("control-center.home.weather.disabled"));
     } else if (!m_weather->locationConfigured()) {
       m_weatherGlyph->setGlyph("weather-cloud");
       m_weatherGlyph->setColor(colorSpecFromRole(ColorRole::OnSurfaceVariant));
-      m_weatherLabel->setText(i18n::tr("control-center.weather.no-location-title"));
+      m_weatherTempLabel->setText("--°C");
+      m_weatherHiLoLabel->setText("-- / --");
+      m_weatherDescLabel->setText(i18n::tr("control-center.weather.no-location-title"));
     } else {
       const auto& snapshot = m_weather->snapshot();
       if (!snapshot.valid) {
         m_weatherGlyph->setGlyph("weather-cloud");
         m_weatherGlyph->setColor(colorSpecFromRole(ColorRole::OnSurfaceVariant));
-        m_weatherLabel->setText(
+        m_weatherTempLabel->setText(std::format("--{}", m_weather->displayTemperatureUnit()));
+        m_weatherHiLoLabel->setText("-- / --");
+        m_weatherDescLabel->setText(
             m_weather->loading() ? i18n::tr("control-center.home.weather.fetching")
                                  : i18n::tr("control-center.home.weather.data-unavailable")
         );
       } else {
         m_weatherGlyph->setGlyph(WeatherService::glyphForCode(snapshot.current.weatherCode, snapshot.current.isDay));
-        m_weatherGlyph->setColor(colorSpecFromRole(ColorRole::Primary));
-        const int temp = static_cast<int>(std::lround(m_weather->displayTemperature(snapshot.current.temperatureC)));
-        const std::string desc = WeatherService::descriptionForCode(snapshot.current.weatherCode);
-        m_weatherLabel->setText(std::format("{}°{} · {}", temp, m_weather->displayTemperatureUnit(), desc));
+        m_weatherGlyph->setColor(colorSpecFromRole(snapshot.current.isDay ? ColorRole::Primary : ColorRole::Secondary));
+        m_weatherTempLabel->setText(
+            std::format(
+                "{}{}", static_cast<int>(std::lround(m_weather->displayTemperature(snapshot.current.temperatureC))),
+                m_weather->displayTemperatureUnit()
+            )
+        );
+        if (!snapshot.forecastDays.empty()) {
+          m_weatherHiLoLabel->setText(
+              std::format(
+                  "{} / {}{}",
+                  static_cast<int>(
+                      std::lround(m_weather->displayTemperature(snapshot.forecastDays.front().temperatureMaxC))
+                  ),
+                  static_cast<int>(
+                      std::lround(m_weather->displayTemperature(snapshot.forecastDays.front().temperatureMinC))
+                  ),
+                  m_weather->displayTemperatureUnit()
+              )
+          );
+        } else {
+          m_weatherHiLoLabel->setText("-- / --");
+        }
+        m_weatherDescLabel->setText(WeatherService::descriptionForCode(snapshot.current.weatherCode));
+
+        newEffect = kHomeTestEffect != EffectType::None
+            ? kHomeTestEffect
+            : (m_weather->effectsEnabled() ? effectForWeatherCode(snapshot.current.weatherCode, snapshot.current.isDay)
+                                           : EffectType::None);
       }
+    }
+
+    if (m_weatherEffectNode != nullptr) {
+      if (newEffect != m_weatherActiveEffect) {
+        m_weatherActiveEffect = newEffect;
+        m_weatherShaderTime = 0.0f;
+      }
+      m_weatherEffectNode->setEffectType(m_weatherActiveEffect);
+      m_weatherEffectNode->setBgColor(colorForRole(ColorRole::Surface));
+      m_weatherEffectNode->setRadius(Style::scaledRadiusXl(contentScale()));
+      m_weatherEffectNode->setVisible(m_weatherActiveEffect != EffectType::None);
     }
   }
 }
@@ -1047,7 +1131,11 @@ void HomeTab::syncShortcuts() {
       }
     }
     if (pad.glyph != nullptr) {
-      pad.glyph->setGlyph(sc.displayIcon());
+      const std::string glyph = sc.displayIcon();
+      if (pad.styleGlyph != glyph) {
+        pad.glyph->setGlyph(glyph);
+        pad.styleGlyph = glyph;
+      }
     }
     if (pad.button != nullptr && pad.label != nullptr) {
       const std::string label = sc.displayLabel();
@@ -1158,7 +1246,7 @@ void HomeTab::layoutWallpaperBackground(Renderer& renderer) {
     m_wallpaperGradient->setPosition(bw, bw);
     m_wallpaperGradient->setFrameSize(cw, ch);
     const Color surface = colorForRole(ColorRole::Surface);
-    const Color translucentSurface = rgba(surface.r, surface.g, surface.b, surface.a * 0.92f);
+    const Color translucentSurface = rgba(surface.r, surface.g, surface.b, surface.a * 0.72f);
     const Color transparentSurface = rgba(surface.r, surface.g, surface.b, 0.0f);
     m_wallpaperGradient->setStyle(
         RoundedRectStyle{
