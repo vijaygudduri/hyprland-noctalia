@@ -78,6 +78,7 @@ private:
   void syncShortcuts();
   void syncVolumeSlider();
   void syncBrightnessSlider();
+  void hideWeatherEffect();
   void layoutWallpaperBackground(Renderer& renderer);
   void ensureWallpaperThumbnail(const std::string& path, int targetPx);
   void syncWallpaperBackground(Renderer& renderer);
