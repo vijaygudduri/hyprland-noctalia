@@ -102,15 +102,21 @@ wallpaper_scheme = "m3-content"
 
 [wallpaper]
 directory = "/home/vijay/Pictures/Wallpapers"
+transition_on_startup = true
+
+    [wallpaper.automation]
+    enabled = true
+    interval_seconds = 18000
+    recursive = false
 
     [wallpaper.default]
-    path = "/home/vijay/Pictures/Wallpapers/kyle-johnson-8Gl7Ew-q6D8-unsplash.jpg"
+    path = "/home/vijay/Pictures/Wallpapers/wallhaven-9oxjvd_1920x1200.png"
 
     [wallpaper.last]
-    path = "/home/vijay/Pictures/Wallpapers/kyle-johnson-8Gl7Ew-q6D8-unsplash.jpg"
+    path = "/home/vijay/Pictures/Wallpapers/wallhaven-9oxjvd_1920x1200.png"
 
     [wallpaper.monitors.eDP-1]
-    path = "/home/vijay/Pictures/Wallpapers/kyle-johnson-8Gl7Ew-q6D8-unsplash.jpg"
+    path = "/home/vijay/Pictures/Wallpapers/wallhaven-9oxjvd_1920x1200.png"
 
 [widget.battery]
 color = "#8CE2FF"
