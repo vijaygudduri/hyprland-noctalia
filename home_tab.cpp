@@ -414,7 +414,7 @@ std::unique_ptr<Flex> HomeTab::create() {
         .step = 0.01,
         .value = static_cast<double>(currentVolume),
         .enabled = true,
-        .trackHeight = Style::sliderTrackHeight * scale,
+        .trackHeight = Style::sliderTrackHeight * scale * 0.75f,
         .thumbSize = Style::sliderThumbSize * scale,
         .controlHeight = Style::controlHeight * scale,
         .flexGrow = 1.0f,
@@ -485,7 +485,7 @@ std::unique_ptr<Flex> HomeTab::create() {
         .step = 0.01,
         .value = static_cast<double>(currentBrightness),
         .enabled = brightnessAvailable,
-        .trackHeight = Style::sliderTrackHeight * scale,
+        .trackHeight = Style::sliderTrackHeight * scale * 0.75f,
         .thumbSize = Style::sliderThumbSize * scale,
         .controlHeight = Style::controlHeight * scale,
         .flexGrow = 1.0f,
@@ -1028,20 +1028,20 @@ void HomeTab::sync(Renderer& renderer) {
   // mirrors WeatherTab::sync()'s current-conditions card, minus the location line.
   if (m_weatherGlyph != nullptr && m_weatherTempLabel != nullptr && m_weatherHiLoLabel != nullptr
       && m_weatherDescLabel != nullptr) {
-    EffectType newEffect = EffectType::None;
-
     if (m_weather == nullptr || !m_weather->enabled()) {
       m_weatherGlyph->setGlyph("weather-cloud-off");
       m_weatherGlyph->setColor(colorSpecFromRole(ColorRole::OnSurfaceVariant));
       m_weatherTempLabel->setText("--°C");
       m_weatherHiLoLabel->setText("-- / --");
       m_weatherDescLabel->setText(i18n::tr("control-center.home.weather.disabled"));
+      hideWeatherEffect();
     } else if (!m_weather->locationConfigured()) {
       m_weatherGlyph->setGlyph("weather-cloud");
       m_weatherGlyph->setColor(colorSpecFromRole(ColorRole::OnSurfaceVariant));
       m_weatherTempLabel->setText("--°C");
       m_weatherHiLoLabel->setText("-- / --");
       m_weatherDescLabel->setText(i18n::tr("control-center.weather.no-location-title"));
+      hideWeatherEffect();
     } else {
       const auto& snapshot = m_weather->snapshot();
       if (!snapshot.valid) {
@@ -1053,6 +1053,7 @@ void HomeTab::sync(Renderer& renderer) {
             m_weather->loading() ? i18n::tr("control-center.home.weather.fetching")
                                  : i18n::tr("control-center.home.weather.data-unavailable")
         );
+        hideWeatherEffect();
       } else {
         m_weatherGlyph->setGlyph(WeatherService::glyphForCode(snapshot.current.weatherCode, snapshot.current.isDay));
         m_weatherGlyph->setColor(colorSpecFromRole(snapshot.current.isDay ? ColorRole::Primary : ColorRole::Secondary));
@@ -1080,23 +1081,35 @@ void HomeTab::sync(Renderer& renderer) {
         }
         m_weatherDescLabel->setText(WeatherService::descriptionForCode(snapshot.current.weatherCode));
 
-        newEffect = kHomeTestEffect != EffectType::None
-            ? kHomeTestEffect
-            : (m_weather->effectsEnabled() ? effectForWeatherCode(snapshot.current.weatherCode, snapshot.current.isDay)
-                                           : EffectType::None);
+        if (m_weatherEffectNode != nullptr) {
+          const EffectType newEffect = kHomeTestEffect != EffectType::None
+              ? kHomeTestEffect
+              : (m_weather->effectsEnabled()
+                     ? effectForWeatherCode(snapshot.current.weatherCode, snapshot.current.isDay)
+                     : EffectType::None);
+          if (newEffect != m_weatherActiveEffect) {
+            m_weatherActiveEffect = newEffect;
+            m_weatherShaderTime = 0.0f;
+          }
+          m_weatherEffectNode->setEffectType(m_weatherActiveEffect);
+          m_weatherEffectNode->setBgColor(colorForRole(ColorRole::Surface));
+          m_weatherEffectNode->setRadius(Style::scaledRadiusXl(contentScale()));
+          m_weatherEffectNode->setVisible(m_weatherActiveEffect != EffectType::None);
+        }
       }
     }
+  }
+}
 
-    if (m_weatherEffectNode != nullptr) {
-      if (newEffect != m_weatherActiveEffect) {
-        m_weatherActiveEffect = newEffect;
-        m_weatherShaderTime = 0.0f;
-      }
-      m_weatherEffectNode->setEffectType(m_weatherActiveEffect);
-      m_weatherEffectNode->setBgColor(colorForRole(ColorRole::Surface));
-      m_weatherEffectNode->setRadius(Style::scaledRadiusXl(contentScale()));
-      m_weatherEffectNode->setVisible(m_weatherActiveEffect != EffectType::None);
-    }
+// Mirrors WeatherTab::hideEffect() so the "no effect" paths in sync() below match
+// the upstream branch shape (each non-valid state calls this instead of falling
+// through to a shared tail block), keeping future upstream patches easy to port.
+void HomeTab::hideWeatherEffect() {
+  m_weatherActiveEffect = EffectType::None;
+  m_weatherShaderTime = 0.0f;
+  if (m_weatherEffectNode != nullptr) {
+    m_weatherEffectNode->setEffectType(EffectType::None);
+    m_weatherEffectNode->setVisible(false);
   }
 }
 
