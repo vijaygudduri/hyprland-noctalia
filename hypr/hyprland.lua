@@ -58,6 +58,8 @@ hl.on("hyprland.start", function()
 
     hl.exec_cmd("wl-clip-persist --clipboard both")
 
+    hl.exec_cmd("~/.config/scripts/battery-notify.sh 2>&1 | systemd-cat -t battery-notify")
+
 end)
 
 -------------------------------
