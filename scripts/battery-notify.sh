@@ -22,6 +22,7 @@ echo "Started: BAT=$BAT AC=$AC"
 
 # --- Config ---
 STATE_FILE="/tmp/battery-notify.state"
+APP_NAME="battery-notification"
 THRESHOLDS_LOW=(20 15 10 5)
 THRESHOLDS_HIGH=(80 85 90 95 100)
 
@@ -30,8 +31,32 @@ LAST_AC=""
 LAST_CAPACITY=""
 [[ -f "$STATE_FILE" ]] && source "$STATE_FILE"
 
+# Picks a battery icon name based on percentage and charge state.
+# Rounds down to the nearest 10 (standard Freedesktop icon naming only ships
+# in steps of 10, e.g. battery-020-symbolic, battery-full-charging-symbolic).
+battery_icon() {
+    local percentage="$1" charging="$2"
+    local step=$(( percentage / 10 * 10 ))
+    (( step > 100 )) && step=100
+
+    if (( step >= 100 )); then
+        if [[ "$charging" == "1" ]]; then
+            echo "battery-full-charging-symbolic"
+        else
+            echo "battery-full-symbolic"
+        fi
+    else
+        printf -v padded "%03d" "$step"
+        if [[ "$charging" == "1" ]]; then
+            echo "battery-${padded}-charging-symbolic"
+        else
+            echo "battery-${padded}-symbolic"
+        fi
+    fi
+}
+
 check_state() {
-    local CAPACITY ONLINE STATUS
+    local CAPACITY ONLINE STATUS ICON
 
     # Read sysfs files directly, no subshells
     read -r CAPACITY < "$BAT/capacity"
@@ -40,12 +65,13 @@ check_state() {
 
     # Charger connect/disconnect
     if [[ "$ONLINE" != "$LAST_AC" ]]; then
+        ICON=$(battery_icon "$CAPACITY" "$ONLINE")
         if [[ "$ONLINE" == "1" ]]; then
             echo "Charger connected (battery ${CAPACITY}%)"
-            notify-send -u normal -i battery "Charger Connected" "Battery at ${CAPACITY}%"
+            notify-send -h int:transient:1 -a "$APP_NAME" -u normal -i "$ICON" "Charger Connected" "Battery at ${CAPACITY}%"
         else
             echo "Charger disconnected (battery ${CAPACITY}%)"
-            notify-send -u normal -i battery "Charger Disconnected" "Battery at ${CAPACITY}%"
+            notify-send -h int:transient:1 -a "$APP_NAME" -u normal -i "$ICON" "Charger Disconnected" "Battery at ${CAPACITY}%"
         fi
         LAST_AC="$ONLINE"
     fi
@@ -56,8 +82,9 @@ check_state() {
             if [[ "$CAPACITY" -eq "$t" && "$LAST_CAPACITY" != "$t" ]]; then
                 urgency="normal"
                 [[ "$t" -le 10 ]] && urgency="critical"
+                ICON=$(battery_icon "$t" "0")
                 echo "Low battery threshold hit: ${t}%"
-                notify-send -u "$urgency" -i battery "Battery Low" "Battery at ${t}%, please connect the charger"
+                notify-send -h int:transient:1 -a "$APP_NAME" -u "$urgency" -i "$ICON" "Battery Low" "Battery at ${t}%, please connect the charger"
             fi
         done
     fi
@@ -66,8 +93,9 @@ check_state() {
     if [[ "$STATUS" == "Charging" || "$STATUS" == "Full" ]]; then
         for t in "${THRESHOLDS_HIGH[@]}"; do
             if [[ "$CAPACITY" -eq "$t" && "$LAST_CAPACITY" != "$t" ]]; then
+                ICON=$(battery_icon "$t" "1")
                 echo "High battery threshold hit: ${t}%"
-                notify-send -u normal -i battery "Battery Charged" "Battery at ${t}%, please disconnect the charger"
+                notify-send -h int:transient:1 -a "$APP_NAME" -u normal -i "$ICON" "Battery Charged" "Battery at ${t}%, please disconnect the charger"
             fi
         done
     fi
