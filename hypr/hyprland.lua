@@ -211,7 +211,7 @@ hl.config({
 -- See https://wiki.hypr.land/Configuring/Layouts/Scrolling-Layout/ for more
 hl.config({
     scrolling = {
-        fullscreen_on_one_column = true,
+        fullscreen_on_one_column = false,
         column_width = "1"
     },
 })
@@ -384,6 +384,16 @@ hl.bind(mainMod .. " + A", hl.dsp.window.resize())
 -- resize window
 hl.bind(mainMod .. " + period", hl.dsp.layout("colresize 0.5"))
 hl.bind(mainMod .. " + comma", hl.dsp.layout("colresize 1"))
+
+-- toggle between column width 0.5 and 1.0
+hl.bind(mainMod .. " + Z", function()
+    local activeWin = hl.get_active_window()
+    if activeWin == nil then return end
+
+    local isFullWidth = activeWin.size.x >= (activeWin.monitor.width * 0.9)
+    hl.dispatch(hl.dsp.layout("colresize all " .. (isFullWidth and "0.5" or "1")))
+    hl.dispatch(hl.dsp.focus({ window = "address:" .. activeWin.address }))
+end)
 
 -- Lock the screen when closing the lid
 hl.bind(
