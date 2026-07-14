@@ -355,7 +355,7 @@ std::unique_ptr<Flex> HomeTab::create() {
   auto sliderCard = ui::column({
       .align = FlexAlign::Stretch,
       .gap = Style::spaceSm * scale,
-      .configure = [scale, opacity = panelCardOpacity(), borders = panelBordersEnabled()](Flex& card) {
+      .configure = [scale, opacity = panelCardOpacity() * 0.8f, borders = panelBordersEnabled()](Flex& card) {
         applySectionCardStyle(card, scale, opacity, borders);
       },
   });
