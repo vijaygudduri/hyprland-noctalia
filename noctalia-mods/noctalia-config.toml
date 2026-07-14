@@ -1,5 +1,5 @@
 [bar.default]
-background_opacity = 0.0
+background_opacity = 0.64999998547136784
 capsule = true
 capsule_fill = "#1E1F27"
 center = [ "battery", "date", "clock" ]
@@ -24,6 +24,9 @@ thickness = 39
     opacity = 1.0
     padding = 6.0
 
+[battery]
+warning_threshold = 0
+
 [calendar]
 enabled = true
 
@@ -47,6 +50,9 @@ width = 650
 
     [[control_center.shortcuts]]
     type = "noctalia/screen_recorder:toggle"
+
+[desktop_widgets]
+enabled = false
 
 [idle]
 behavior_order = [ "lock", "screen-off", "lock-and-suspend" ]
@@ -85,7 +91,7 @@ polkit_agent = true
 settings_show_advanced = true
 
     [shell.panel]
-    control_center_placement = "floating"
+    control_center_placement = "attached"
     open_near_click_control_center = true
     transparency_mode = "soft"
 
@@ -107,13 +113,13 @@ transition_on_startup = true
     recursive = false
 
     [wallpaper.default]
-    path = "/home/vijay/Pictures/Wallpapers/wallhaven-4v9oz8_1920x1200.png"
+    path = "/home/vijay/Pictures/Wallpapers/wallhaven-4dooyo_1920x1200.png"
 
     [wallpaper.last]
-    path = "/home/vijay/Pictures/Wallpapers/wallhaven-4v9oz8_1920x1200.png"
+    path = "/home/vijay/Pictures/Wallpapers/wallhaven-4dooyo_1920x1200.png"
 
     [wallpaper.monitors.eDP-1]
-    path = "/home/vijay/Pictures/Wallpapers/wallhaven-4v9oz8_1920x1200.png"
+    path = "/home/vijay/Pictures/Wallpapers/wallhaven-4dooyo_1920x1200.png"
 
 [widget.battery]
 color = "#8CE2FF"
