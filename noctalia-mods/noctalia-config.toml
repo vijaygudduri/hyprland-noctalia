@@ -24,9 +24,6 @@ thickness = 39
     opacity = 1.0
     padding = 6.0
 
-[battery]
-warning_threshold = 25
-
 [calendar]
 enabled = true
 
@@ -83,7 +80,7 @@ position = "top_center"
 enabled = [ "noctalia/screen_recorder" ]
 
 [shell]
-avatar_path = "/home/vijay/Pictures/Wallpapers/Coffee_albedo.png"
+avatar_path = "/home/vijay/Pictures/Wallpapers/Avtars/wallhaven-jevz8y_1600x1200.png"
 polkit_agent = true
 settings_show_advanced = true
 
@@ -110,13 +107,13 @@ transition_on_startup = true
     recursive = false
 
     [wallpaper.default]
-    path = "/home/vijay/Pictures/Wallpapers/wallhaven-9oxjvd_1920x1200.png"
+    path = "/home/vijay/Pictures/Wallpapers/wallhaven-4v9oz8_1920x1200.png"
 
     [wallpaper.last]
-    path = "/home/vijay/Pictures/Wallpapers/wallhaven-9oxjvd_1920x1200.png"
+    path = "/home/vijay/Pictures/Wallpapers/wallhaven-4v9oz8_1920x1200.png"
 
     [wallpaper.monitors.eDP-1]
-    path = "/home/vijay/Pictures/Wallpapers/wallhaven-9oxjvd_1920x1200.png"
+    path = "/home/vijay/Pictures/Wallpapers/wallhaven-4v9oz8_1920x1200.png"
 
 [widget.battery]
 color = "#8CE2FF"
